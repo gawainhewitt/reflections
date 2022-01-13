@@ -4,9 +4,8 @@ let colours = ({
     background: 'rgb(255, 255, 0)',
     startScreen: 'rgba(50, 50, 50, 0.75)',
     infoText: 'white',
-    loadOff: 'rgb(50',
-    playOff: 'rgb(0, 255, 0)',
-    recordOff: 'rgb(255, 0, 0)',
+    loadOff: 'rgb(0, 255, 0)',
+    playOff: 'rgb(255, 0, 0)',
     on: 'rgb(0,255,255)',
     effectOff: 'rgb(0, 255, 0)',
     effectOn:'rgb(255, 0, 0)',
@@ -16,7 +15,6 @@ let colours = ({
 
 let loadButton; // in setup this becomes an object with all the ingredients for a load button
 let playButton; // in setup this becomes an object with all the ingredients for a play button
-let recordButton; // as above
 let effectButtons = new Array; //array to store effect buttons objects in
 let numberOfEffectButtons = 5; //how many effect buttons?
 
@@ -43,28 +41,26 @@ const effectedAmpEnv = new Tone.AmplitudeEnvelope({
     decay: 0.2,
     sustain: 1.0,
     release: 0.1
-});
+}).toDestination();
 const reverb = new Tone.Reverb ({
     decay: 4
-});
-const pingPong = new Tone.PingPongDelay({
+}).toDestination();
+const phaser = new Tone.Phaser({
+	frequency: 15,
+	octaves: 5,
+	baseFrequency: 1000
 });
 const effectedSongPlayer = new Tone.Player();
 const effectedMeter = new Tone.Meter();
 effectedMeter.normalRange = true;
-// effectedSongPlayer.connect(effectedAmpEnv);
-// effectedAmpEnv.connect(effectedMeter);
-
-let recorderInitialised = false; // we will check to see if we can use the mic
-let mic, recorder;
-let recordTime; //variable to store time of recording in as other method isn't cross platform compatible
+effectedSongPlayer.connect(effectedAmpEnv);
+effectedAmpEnv.connect(effectedMeter);
 
 let whichSound; // which of the samples?
 let theSample; //current sample
-let theVolume = -4;
+let theVolume = -6;
 let buffer0;
 let buffer1;
-let recordBuffer;
 let interfaceState = 0; // 0 displays the text loading, 1 is a button, 2 is a visualisation of the sound, 3 is error loading sound to buffer
 let usedSounds = new Array;
 let bufferToPlay = "start";
@@ -121,7 +117,7 @@ function setup() {  // setup p5
     uneffectedSongPlayer.set(
         {
           "mute": false,
-          "volume": theVolume,
+          "volume": 0,
           "autostart": false,
           "fadeIn": 0,
           "fadeOut": 0,
@@ -134,7 +130,7 @@ function setup() {  // setup p5
     effectedSongPlayer.set(
         {
           "mute": false,
-          "volume": theVolume,
+          "volume": 0,
           "autostart": false,
           "fadeIn": 0,
           "fadeOut": 0,
@@ -145,29 +141,20 @@ function setup() {  // setup p5
     );
     visualisationHeight = height;
     loadButton = ({
-        x: width/4,
+        x: width/3,
         y: height/5,
         state: false,
-        colour: colours.loadOff,
-        text: 'load'
+        colour: colours.loadOff
     });
     playButton = ({
-        x: (width/4) * 3,
+        x: (width/3) * 2,
         y: height/5,
         state: false,
         colour: colours.playOff,
         text: 'play'
     });
-    recordButton = ({
-        x: (width/4) * 2,
-        y: height/5,
-        state: false,
-        colour: colours.recordOff,
-        text: 'record'
-    });
     let bottomButtonsY = (height/5)*4;
     createButtonPositions(bottomButtonsY);
-    chain();
 }
 
 function createButtonPositions(bottomButtonsY) {
@@ -204,13 +191,7 @@ function draw() {
         fill(loadButton.colour);
         ellipse(loadButton.x, loadButton.y, buttonRadius);
         fill(0);
-        text(loadButton.text, loadButton.x, loadButton.y);
-        if(Tone.UserMedia.supported){
-            {fill(recordButton.colour);
-            ellipse(recordButton.x, recordButton.y, buttonRadius);
-            fill(0);
-            text(recordButton.text, recordButton.x, recordButton.y);}
-        }
+        text("Load", loadButton.x, loadButton.y);
         if(effectedSongPlayer.loaded === true){
             fill(playButton.colour);
             ellipse(playButton.x, playButton.y, buttonRadius);
@@ -333,12 +314,6 @@ function handleClick() {
             debounce(loadButtonPressed(), 200);
             loadButton.state = true;
         }
-        if(Tone.UserMedia.supported){
-            let d4 = dist(mouseX, mouseY, recordButton.x, recordButton.y);
-            if (d4 < buttonRadius/2) {
-                debounce(recordButtonPressed(), 200);
-            }
-        }
         if(uneffectedSongPlayer.loaded === true){
             let d2 = dist(mouseX, mouseY, playButton.x, playButton.y);
             if (d2 < buttonRadius/2) {
@@ -354,57 +329,89 @@ function handleClick() {
     }
 }
 
-function loadButtonPressed() {
-    uneffectedSongPlayer.stop();
-    effectedSongPlayer.stop();
-    Tone.Transport.stop();
-    playButton.colour = colours.playOff;
-    playButton.text = 'start';
-    reload();
-    lastBuffer = currentBuffer;
-    console.log(`lastBuffer = ${lastBuffer}`);
-    loadButton.colour = colours.on;
-    chooseSample();
+function effectButtonPressed(button){
+    console.log(`effect button ${button+1} pressed`);
+    // effect1();
+    window[`effect${button+1}`](button);// this allows you to create a function name from a string and then call it
 }
 
-function recordButtonPressed(){
-    console.log('in record');
-    uneffectedSongPlayer.stop();
-    effectedSongPlayer.stop();
-    Tone.Transport.stop();
-    playButton.colour = colours.playOff;
-    playButton.text = 'start';
-    if(recordButton.state ===false){
-        recordButton.colour = colours.on;
-        recordButton.state = true;
-        if (!recorderInitialised) {
-            mic = new Tone.UserMedia();
-            recorder = new Tone.Recorder();
-            mic.connect(recorder);
-            mic.open();
-            initialized = true;
-            }
-        recorder.start();
-        recordTime = Date.now();
+function effect1(button) {
+    if(effectButtons[button].status === false){
+        let sampleDivision = fileLength/(getRndInteger(4, 64));
+        let sustain = sampleDivision/2;
+        // effectedAmpEnv.triggerRelease();
+        //effectedAmpEnv.triggerAttackRelease(1);
+        console.log(`in effect1`);
+        scheduledRepeatID = Tone.Transport.scheduleRepeat(() => {
+            console.log("testing");
+            effectedAmpEnv.triggerAttackRelease(sustain);
+        }, sampleDivision);
+        effectButtons[button].colour = colours.effectOn;
+        effectButtons[button].status = true;
+        console.log(`id of transport = ${scheduledRepeatID}`);
     }else{
-        let recordingDuration = Date.now() - recordTime;
-        recordingDuration = (recordingDuration /1000);
-        recordStop(recordingDuration);
+        Tone.Transport.clear(scheduledRepeatID); // clear the repeat above
+        effectedAmpEnv.triggerAttack();
+        effectButtons[button].colour = colours.effectOff;
+        effectButtons[button].status = false;
     }
 }
 
-async function recordStop(duration) {
-    recordButton.colour = colours.recordOff;
-    recordButton.state = false;
-    let data = await recorder.stop();
-    let blobUrl = URL.createObjectURL(data);
-    recordBuffer = new Tone.ToneAudioBuffer(blobUrl);
-    uneffectedSongPlayer.buffer = recordBuffer;
-    effectedSongPlayer.buffer = recordBuffer;
-    // for some reason I can't read the length in samples or time of the file in the buffer on chrome, although it does work on firefox, so I'll have to use another method to get file length
-    fileLength = duration;
-    console.log(`fileLength = ${fileLength}`);
-    //playSong();
+function effect2(button) {
+    console.log(`in effect2`);
+    if(effectButtons[button].status === false){
+        effectedSongPlayer.playbackRate = (Math.random()+0.01)*2;
+        effectButtons[button].colour = colours.effectOn;
+        effectButtons[button].status = true;
+    }else{
+        effectedSongPlayer.playbackRate = 1;
+        effectButtons[button].colour = colours.effectOff;
+        effectButtons[button].status = false;
+    }
+}
+
+function effect3(button) {
+    console.log('in effect3');
+    if(effectButtons[button].status === false){
+        reverb.decay = getRndInteger(2, 10);
+        effectedAmpEnv.connect(reverb);
+        effectedAmpEnv.disconnect(effectedMeter);
+        reverb.connect(effectedMeter);
+        effectButtons[button].colour = colours.effectOn;
+        effectButtons[button].status = true;
+    }else{
+        effectedAmpEnv.disconnect(reverb);
+        reverb.disconnect(effectedMeter);
+        effectedAmpEnv.connect(effectedMeter);
+        effectButtons[button].colour = colours.effectOff;
+        effectButtons[button].status = false;
+    }
+}
+
+function effect4(button) {
+    console.log(`in effect4`);
+    if(effectButtons[button].status === false){
+        effectedSongPlayer.reverse = true;
+        effectButtons[button].colour = colours.effectOn;
+        effectButtons[button].status = true;
+    }else{
+        effectedSongPlayer.reverse = false;
+        effectButtons[button].colour = colours.effectOff;
+        effectButtons[button].status = false;
+    }
+}
+
+function effect5(button) {
+    console.log(`in effect5`);
+    if(effectButtons[button].status === false){
+        effectedAmpEnv.connect(phaser);
+        effectButtons[button].colour = colours.effectOn;
+        effectButtons[button].status = true;
+    }else{
+        effectedAmpEnv.disconnect(phaser);
+        effectButtons[button].colour = colours.effectOff;
+        effectButtons[button].status = false;
+    }
 }
 
 function playSong() {
@@ -435,128 +442,19 @@ function playSong() {
     }
 }
 
-function effectButtonPressed(button){
-    console.log(`effect button ${button+1} pressed`);
-    // effect1();
-    window[`effect${button+1}`](button);// this allows you to create a function name from a string and then call it
-}
-
-function effect1(button) {
-    if(effectButtons[button].status === false){
-        let sampleDivision
-        if(fileLength > 10){
-            sampleDivision = fileLength/(getRndInteger(4, 64));
-        }else if(fileLength > 3){
-            sampleDivision = fileLength/(getRndInteger(4, 16));
-        }
-        else{
-            sampleDivision = fileLength/(getRndInteger(1, 8));
-        }
-        let sustain = sampleDivision/2;
-        // effectedAmpEnv.triggerRelease();
-        //effectedAmpEnv.triggerAttackRelease(1);
-        console.log(`in effect1`);
-        scheduledRepeatID = Tone.Transport.scheduleRepeat(() => {
-            console.log("testing");
-            effectedAmpEnv.triggerAttackRelease(sustain);
-        }, sampleDivision);
-        effectButtons[button].colour = colours.effectOn;
-        effectButtons[button].status = true;
-        console.log(`id of transport = ${scheduledRepeatID}`);
-        chain();
-    }else{
-        Tone.Transport.clear(scheduledRepeatID); // clear the repeat above
-        effectedAmpEnv.triggerAttack();
-        effectButtons[button].colour = colours.effectOff;
-        effectButtons[button].status = false;
+function loadButtonPressed() {
+    uneffectedSongPlayer.stop();
+    effectedSongPlayer.stop();
+    Tone.Transport.stop();
+    playButton.colour = colours.playOff;
+    playButton.text = 'start';
+    reload();
+    lastBuffer = currentBuffer;
+    console.log(`lastBuffer = ${lastBuffer}`);
+    loadButton.colour = colours.on;
+    chooseSample();
     }
-}
 
-function effect2(button) {
-    console.log(`in effect2`);
-    if(effectButtons[button].status === false){
-        effectedSongPlayer.playbackRate = (Math.random()+0.01)*2;
-        effectButtons[button].colour = colours.effectOn;
-        effectButtons[button].status = true;
-    }else{
-        effectedSongPlayer.playbackRate = 1;
-        effectButtons[button].colour = colours.effectOff;
-        effectButtons[button].status = false;
-    }
-}
-
-function effect3(button) {
-    console.log('in effect3');
-    if(effectButtons[button].status === false){
-        reverb.decay = getRndInteger(6, 20);
-        // effectedAmpEnv.connect(reverb);
-        //effectedAmpEnv.disconnect(effectedMeter);
-        // reverb.connect(effectedMeter);
-        effectButtons[button].colour = colours.effectOn;
-        effectButtons[button].status = true;
-        chain();
-    }else{
-        //reverb.disconnect(effectedMeter);
-        // effectedAmpEnv.connect(effectedMeter);
-        effectButtons[button].colour = colours.effectOff;
-        effectButtons[button].status = false;
-        chain();
-        if(effectButtons[4].status === false){
-            effectedAmpEnv.disconnect(reverb);
-        }else{
-            pingPong.disconnect(reverb);
-        }
-    }
-}
-
-function effect4(button) {
-    console.log(`in effect4`);
-    if(effectButtons[button].status === false){
-        effectedSongPlayer.reverse = true;
-        effectButtons[button].colour = colours.effectOn;
-        effectButtons[button].status = true;
-    }else{
-        effectedSongPlayer.reverse = false;
-        effectButtons[button].colour = colours.effectOff;
-        effectButtons[button].status = false;
-    }
-}
-
-function effect5(button) {
-    console.log(`in effect5`);
-    if(effectButtons[button].status === false){
-        pingPong.delayTime = (Math.random()+0.01)*5;
-        //pingPong.delayTime = fileLength/(getRndInteger(4, 64));
-        //effectedAmpEnv.connect(pingPong);
-        effectButtons[button].colour = colours.effectOn;
-        effectButtons[button].status = true;
-        chain();
-    }else{
-        effectedAmpEnv.disconnect(pingPong);
-        effectButtons[button].colour = colours.effectOff;
-        effectButtons[button].status = false;
-        chain();
-    }
-}
-
-function chain(){
-    if(effectButtons[2].status === true && effectButtons[4].status === true){
-        console.log("chain1");
-        effectedSongPlayer.chain(effectedAmpEnv, pingPong, reverb, effectedMeter, Tone.Destination);
-    }else if(effectButtons[2].status === true){
-        console.log("chain2");
-        //effectedSongPlayer.disconnect();
-        effectedSongPlayer.chain(effectedAmpEnv, reverb, effectedMeter, Tone.Destination);
-    }else if(effectButtons[4].status === true){
-        console.log("chain3");
-        //effectedSongPlayer.disconnect();
-        effectedSongPlayer.chain(effectedAmpEnv, pingPong, effectedMeter, Tone.Destination);
-    }else{
-        console.log("chain4");
-        //effectedSongPlayer.disconnect();
-        effectedSongPlayer.chain(effectedAmpEnv, effectedMeter, Tone.Destination);
-    }
-}
 
 function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min +1) ) + min;
@@ -660,8 +558,12 @@ function reload() {
 }
 
 function getFileLength(buffer) {
-    console.log(`buffer duration = ${buffer.duration}`);
-    fileLength = buffer.duration;
+    let lengthInSamples = buffer.length; // how many samples are in the buffer?
+    console.log(`lengthInSamples = ${lengthInSamples}`);
+    let sampleTime = effectedSongPlayer.sampleTime; // what is the duration of the sample in the buffer in seconds?
+    let lengthInSeconds = lengthInSamples*sampleTime;
+    console.log(`lengthInSeconds = ${lengthInSeconds}`);
+    fileLength = lengthInSeconds;
 }
 
 function debounce(func, wait, immediate) {

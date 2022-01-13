@@ -1,35 +1,96 @@
-//why am i getting away without having tone.start?
+// ******COLOURS******
 
-// if I add a second buffer can i toggle between them, so that one is loading when the other is playing?
+let colours = ({
+    background: 'rgb(255, 255, 0)',
+    startScreen: 'rgba(50, 50, 50, 0.75)',
+    infoText: 'white',
+    loadOff: 'rgb(50',
+    playOff: 'rgb(0, 255, 0)',
+    recordOff: 'rgb(255, 0, 0)',
+    on: 'rgb(0,255,255)',
+    effectOff: 'rgb(0, 255, 0)',
+    effectOn:'rgb(255, 0, 0)',
+});
 
-// also perhaps have it set so you hear all the recordings in a random order before it returns to the beginning
+//******BUTTONS******/
 
-var waveformRatio = 1.5; // number that sets the radius relative to the screen
-var radius; // variable to store the actual radius in
-var waveformWidth;
-var backgroundColour = 'rgb(255, 255, 0)';
-var onColour = 'rgb(0,255,255)';
-var offColour = 'rgb(0, 255, 0)';
-var buttonColour;
-var buttonState = false;
-var whichSound; // which of the samples?
-var theSample; //current sample
-var theVolume = -6;
-const player = new Tone.Player().toDestination();
-// const analyser = new Tone.Analyser("waveform", 16);
-// player.connect(analyser);
-var buffer0;
-var buffer1;
-var interfaceState = 0; // 0 displays the text loading, 1 is a button, 2 is a visualisation of the sound, 3 is error loading sound to buffer
-var usedSounds = new Array;
-var cnvDimension;
-var bufferToPlay = buffer1;
-var lastBuffer;
-var currentBuffer;
-var numberOfSamples = 5; // the number of samples that we are using
-let visualisationSize;
-let visualisation = [];
+let loadButton; // in setup this becomes an object with all the ingredients for a load button
+let playButton; // in setup this becomes an object with all the ingredients for a play button
+let recordButton; // as above
+let effectButtons = new Array; //array to store effect buttons objects in
+let numberOfEffectButtons = 5; //how many effect buttons?
 
+// ******SOUND****** - i'm using the library Tone.js
+
+// set up the unneffected side of the installation - this drives the left visualisation
+// and will not be processed so not connected to destination. However all chain elements
+// still need to be present otherwise timing will be off for the visualisation
+const uneffectedAmpEnv = new Tone.AmplitudeEnvelope({
+    attack: 0.1,
+    decay: 0.2,
+    sustain: 1.0,
+    release: 0.1
+});
+const uneffectedSongPlayer = new Tone.Player();
+const uneffectedMeter = new Tone.Meter();
+uneffectedMeter.normalRange = true; // display volume as a number between 0 and 1 rather than as decibels
+uneffectedSongPlayer.connect(uneffectedAmpEnv);
+uneffectedAmpEnv.connect(uneffectedMeter);
+
+// set up the effected side which is what we hear
+const effectedAmpEnv = new Tone.AmplitudeEnvelope({
+    attack: 0.1,
+    decay: 0.2,
+    sustain: 1.0,
+    release: 0.1
+});
+const reverb = new Tone.Reverb ({
+    decay: 4
+});
+const pingPong = new Tone.PingPongDelay({
+});
+const effectedSongPlayer = new Tone.Player();
+const effectedMeter = new Tone.Meter();
+effectedMeter.normalRange = true;
+// effectedSongPlayer.connect(effectedAmpEnv);
+// effectedAmpEnv.connect(effectedMeter);
+
+let recorderInitialised = false; // we will check to see if we can use the mic
+let mic, recorder;
+let recordTime; //variable to store time of recording in as other method isn't cross platform compatible
+
+let whichSound; // which of the samples?
+let theSample; //current sample
+let theVolume = -4;
+let buffer0;
+let buffer1;
+let recordBuffer;
+let interfaceState = 0; // 0 displays the text loading, 1 is a button, 2 is a visualisation of the sound, 3 is error loading sound to buffer
+let usedSounds = new Array;
+let bufferToPlay = "start";
+let lastBuffer;
+let currentBuffer;
+let numberOfSamples = 5; // the number of samples that we are
+let started = false; //have we invoked Tone.start() and left the info screen?
+let fileLength; // store the length of a sample in seconds in here
+let scheduledRepeatID; // variable to store the scheduleRepeat in (as the function returns this). We can then use this to cancel it later.
+
+// ******DIMENSIONS******
+
+let cnvDimension; // how big is the canvas?
+let waveformRatio = 3; // number that sets the waveform size relative to the screen
+let buttonRadius; // variable to store the actual buttonRadius in
+let visualisationWidth; // how wide each half of the visualisation is
+let visualisationHeight; // max height of the visualisation
+let visualisation = new Array(100); // to store the left hand data for visualisation
+for(let i = 0; i < visualisation.length; i++){ // populate the array
+    visualisation[i] = 0;
+}
+let visualisation2 = new Array(100); // to store the right hand data for visualisation
+for(let i = 0; i < visualisation2.length; i++){ // populate the array
+    visualisation2[i] = 0;
+}
+let rectangleX, rectangleY, rectangleWidth, rectangleHeight;
 
 function preload(){
     chooseSample();
@@ -42,8 +103,6 @@ function setup() {  // setup p5
     let masterLeft = divPos.left; // distance from left of screen to left edge of bounding box
     let masterRight = divPos.right; // distance from left of screen to the right edge of bounding box
     cnvDimension = masterRight - masterLeft; // size of div -however in some cases this is wrong, so i am now using css !important to set the size and sca;ing - but have kept this to work out size of other elements if needed
-    buttonColour = offColour;
-    visualisationSize = height*2;
 
     console.log("canvas size = " + cnvDimension);
 
@@ -57,55 +116,116 @@ function setup() {  // setup p5
     let el = document.getElementById("p5parent");
     el.addEventListener("click", handleClick);
 
-    setWaveformWidth();
+    setvisualisationWidth();
 
-    player.set(
+    uneffectedSongPlayer.set(
         {
           "mute": false,
-          "volume": 0,
+          "volume": theVolume,
           "autostart": false,
           "fadeIn": 0,
           "fadeOut": 0,
-          "loop": false,
+          "loop": true,
+          "playbackRate": 1,
+          "reverse": false
+        }
+    );
+
+    effectedSongPlayer.set(
+        {
+          "mute": false,
+          "volume": theVolume,
+          "autostart": false,
+          "fadeIn": 0,
+          "fadeOut": 0,
+          "loop": true,
           "playbackRate": 1,
           "reverse": false,
-          "onstop": reload
         }
-      );
-
-      Tone.Transport.start();
-    Tone.Transport.scheduleRepeat(repeat, '128n'); // call our function 'repeat' every x time (8n or an 8th note in this case)
-
+    );
+    visualisationHeight = height;
+    loadButton = ({
+        x: width/4,
+        y: height/5,
+        state: false,
+        colour: colours.loadOff,
+        text: 'load'
+    });
+    playButton = ({
+        x: (width/4) * 3,
+        y: height/5,
+        state: false,
+        colour: colours.playOff,
+        text: 'play'
+    });
+    recordButton = ({
+        x: (width/4) * 2,
+        y: height/5,
+        state: false,
+        colour: colours.recordOff,
+        text: 'record'
+    });
+    let bottomButtonsY = (height/5)*4;
+    createButtonPositions(bottomButtonsY);
+    chain();
 }
 
-var rectangleX, rectangleY, rectangleWidth, rectangleHeight;
+function createButtonPositions(bottomButtonsY) {
+    for(let i = 0; i < numberOfEffectButtons; i++){
+        effectButtons.push({
+            x: (width/(numberOfEffectButtons+1))*(i+1),
+            y: bottomButtonsY,
+            colour: colours.effectOff,
+            text: `fx${i+1}`,
+            status: false,
+        });
+    }
+}
 
 function draw() {
-    rectangleX = (width/3)*1 - radius/2;
-    rectangleY = (height/5)*1 - radius/4;
-    rectangleWidth = radius;
-    rectangleHeight = radius/2;
-    background(backgroundColour); // background
+    rectangleX = loadButton.x - buttonRadius/2;
+    rectangleY = loadButton.y - buttonRadius/4;
+    rectangleWidth = buttonRadius;
+    rectangleHeight = buttonRadius/2;
+    background(colours.background); // background
     //imageMode(CENTER);
     if(interfaceState === 0){
         noStroke();
-        fill(buttonColour);
+        fill(loadButton.colour);
         //rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
         fill(150);
         textAlign(CENTER, CENTER);
         textSize(cnvDimension/20);
-        text("Loading", (width/3)*1, (height/5)*1);
+        text("Loading", loadButton.x, loadButton.y);
     }else if(interfaceState === 1){
+        textAlign(CENTER, CENTER);
+        textSize(cnvDimension/40);
         noStroke();
-        fill(buttonColour);
-        ellipse((width/3)*1, (height/5)*1, radius);
-    }else if(interfaceState === 2){
-        noStroke();
-        fill(buttonColour);
-        ellipse((width/3)*1, (height/5)*1, radius);
+        fill(loadButton.colour);
+        ellipse(loadButton.x, loadButton.y, buttonRadius);
+        fill(0);
+        text(loadButton.text, loadButton.x, loadButton.y);
+        if(Tone.UserMedia.supported){
+            {fill(recordButton.colour);
+            ellipse(recordButton.x, recordButton.y, buttonRadius);
+            fill(0);
+            text(recordButton.text, recordButton.x, recordButton.y);}
+        }
+        if(effectedSongPlayer.loaded === true){
+            fill(playButton.colour);
+            ellipse(playButton.x, playButton.y, buttonRadius);
+            fill(0);
+            text(playButton.text, playButton.x, playButton.y);
+        }
+        for(let i = 0; i < numberOfEffectButtons; i++){
+            fill(effectButtons[i].colour);
+            ellipse(effectButtons[i].x, effectButtons[i].y, buttonRadius);
+            fill(0);
+            text(effectButtons[i].text, effectButtons[i].x, effectButtons[i].y);
+        }
     }else if(interfaceState === 3){
         noStroke();
-        fill(buttonColour);
+        fill(loadButton.colour);
         rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
         fill(150);
         textAlign(CENTER, CENTER);
@@ -113,109 +233,330 @@ function draw() {
         text("Network Problems, click to try again", rectangleX, rectangleY, rectangleWidth, rectangleHeight);// same dimensions as the rectangle above
     }
     stroke(0);
-        strokeWeight(2);
-        let x = width/2 - waveformWidth/2;
-        let y = height/2;
-        let startX = x;
-        let startY = y;
-        let endX;
-        let endY;
-        for(let i = 0; i < visualisation.length-1; i++){
-            // point(x, y + (visualisation[i]*visualisationSize));
-            // x = x + rectangleWidth/visualisation.length;
-
-            startY = y + (visualisation[i]*visualisationSize);
-            endX = startX + waveformWidth/visualisation.length;
-            endY = y + (visualisation[i+1]*visualisationSize);
-
-            line(startX, startY, endX, endY);
-
-            startX = startX + waveformWidth/visualisation.length;
+    strokeWeight(3);
+    let x = width/2 - visualisationWidth;
+    let y = height/3;
+    let startX = x;
+    let startY = y;
+    let endX;
+    let endY;
+    let effectsOn = 0;
+    let level;
+    for(let i = 0; i < numberOfEffectButtons; i++){
+        if(effectButtons[i].status === true){
+            effectsOn++;
         }
-        //text("Audio Visualisation", (width/3)*1, height/2);
-        //console.log(toneWaveForm.getValue());
-}
+    }
+    if(effectsOn === 0){
+        level = effectedMeter.getValue();
+    }else{
+        level = uneffectedMeter.getValue();
+    }
+    let level2 = effectedMeter.getValue();
+    visualisation.push(level);
+    visualisation.splice(0, 1);
+    for(let i = 0; i < visualisation.length-1; i++){
 
-let analyserPlayer = new Tone.Player();
-const analyser = new Tone.Analyser("waveform", 16);
-analyserPlayer.connect(analyser);
-let analyseTheFile = false;
+        startY = y + (visualisation[i]*visualisationHeight);
+        endX = startX + visualisationWidth/visualisation.length;
+        endY = y + (visualisation[i+1]*visualisationHeight);
 
-function repeat(){
-    if(analyseTheFile){
-        let analysis = analyser.getValue();
-            for(let j = 0; j < analysis.length; j++){
-                visualisation.push(analysis[j]);
-            }
-        }
-}
+        line(startX, startY, endX, endY);
 
-function analyseFile(){
-    console.log("do i get here?");
-    visualisation.length = 0;
-
-    // analyserPlayer.autostart = true;
-    let analyseBuffer = bufferToPlay.get();
-    analyserPlayer.buffer = analyseBuffer;
-    analyserPlayer.playbackRate = 20;
-    analyserPlayer.start();
-    analyseTheFile = true;
-    analyserPlayer.onstop = () => {
-        analyseTheFile = false;
+        startX = startX + visualisationWidth/visualisation.length;
     }
 
-    // ///got to here, I now need to think about
+    let x2 = width/2;
+    let y2 = height/3;
+    let startX2 = x2;
+    let startY2 = y2;
+    let endX2;
+    let endY2;
+    visualisation2.push(level2);
+    visualisation2.splice(0, 1);
+    if(effectButtons[3].status === false){
+        for(let i = visualisation2.length-1; i > 0 ; i--){
 
-    // // it "playing" silently
-    // // it "playing" very quickly
-    // // the analysis happening to the whole file - so for all the blocks
+            startY2 = y2 + (visualisation2[i]*visualisationHeight);
+            endX2 = startX2 - visualisationWidth/visualisation2.length;
+            endY2 = y2 + (visualisation2[i+1]*visualisationHeight);
 
-    // for(let i = 0; i < analyseLoops; i++){
-    //     let analysis = analyser.getValue();
-    //     for(let j = 0; j < analysis.length; j++){
-    //         visualisation.push(analysis[j]);
-    //     }
-    // }
+            line(startX2, startY2, endX2, endY2);
+
+            startX2 = startX2 + visualisationWidth/visualisation2.length;
+        }
+    }else{
+        for(let i = 0; i < visualisation2.length-1; i++){
+
+            startY2 = y2 + (visualisation2[i]*visualisationHeight);
+            endX2 = startX2 + visualisationWidth/visualisation2.length;
+            endY2 = y2 + (visualisation2[i+1]*visualisationHeight);
+
+            line(startX2, startY2, endX2, endY2);
+
+            startX2 = startX2 + visualisationWidth/visualisation2.length;
+        }
+    }
+    if(!started){
+        fill(colours.startScreen); // background
+        rect(0, 0, width, height);
+        fill(colours.infoText);
+        text('click to start', width/2, height/2);
+    }
 }
 
 function windowResized() {
-    setWaveformWidth();
+    setvisualisationWidth();
     resizeCanvas(windowWidth, windowHeight);
 }
 
-function setWaveformWidth() {
-    waveformWidth = width/waveformRatio;
+function setvisualisationWidth() {
+    visualisationWidth = (width/waveformRatio);
     if(height > width){
-        radius = waveformWidth/7;
+        buttonRadius = visualisationWidth/3.5;
     }else{
-        radius = waveformWidth/10;
+        buttonRadius = visualisationWidth/5;
     }
 }
 
 function handleClick() {
-    if(interfaceState === 1){
-        let d = dist(mouseX, mouseY, (width/3)*1, (height/5)*1);
-        if (d < radius/2) {
-            buttonPressed();
-            buttonState = true;
-        }
+    if(!started){
+        Tone.start();
+        started = true;
     }else if(interfaceState === 3){
-            console.log("network click");
-            interfaceState = 0;
-            assignSoundToPlayer();
+        console.log("network click");
+        interfaceState = 0;
+        assignSoundToPlayer();
+    }else{
+        let d = dist(mouseX, mouseY, loadButton.x, loadButton.y);
+        if (d < buttonRadius/2) {
+            debounce(loadButtonPressed(), 200);
+            loadButton.state = true;
+        }
+        if(Tone.UserMedia.supported){
+            let d4 = dist(mouseX, mouseY, recordButton.x, recordButton.y);
+            if (d4 < buttonRadius/2) {
+                debounce(recordButtonPressed(), 200);
+            }
+        }
+        if(uneffectedSongPlayer.loaded === true){
+            let d2 = dist(mouseX, mouseY, playButton.x, playButton.y);
+            if (d2 < buttonRadius/2) {
+                debounce(playSong(), 200);
+            }
+        }
+        for(let i = 0; i < numberOfEffectButtons; i++){
+            let d3 = dist(mouseX, mouseY, effectButtons[i].x, effectButtons[i].y);
+            if (d3 < buttonRadius/2) {
+                debounce(effectButtonPressed(i), 200);
+            }
+        }
     }
 }
 
-function buttonPressed() {
-    player.start();
+function loadButtonPressed() {
+    uneffectedSongPlayer.stop();
+    effectedSongPlayer.stop();
+    Tone.Transport.stop();
+    playButton.colour = colours.playOff;
+    playButton.text = 'start';
+    reload();
     lastBuffer = currentBuffer;
     console.log(`lastBuffer = ${lastBuffer}`);
-    console.log("click");
-    interfaceState = 2;
-    buttonColour = onColour;
+    loadButton.colour = colours.on;
     chooseSample();
+}
+
+function recordButtonPressed(){
+    console.log('in record');
+    uneffectedSongPlayer.stop();
+    effectedSongPlayer.stop();
+    Tone.Transport.stop();
+    playButton.colour = colours.playOff;
+    playButton.text = 'start';
+    if(recordButton.state ===false){
+        recordButton.colour = colours.on;
+        recordButton.state = true;
+        if (!recorderInitialised) {
+            mic = new Tone.UserMedia();
+            recorder = new Tone.Recorder();
+            mic.connect(recorder);
+            mic.open();
+            initialized = true;
+            }
+        recorder.start();
+        recordTime = Date.now();
+    }else{
+        let recordingDuration = Date.now() - recordTime;
+        recordingDuration = (recordingDuration /1000);
+        recordStop(recordingDuration);
+    }
+}
+
+async function recordStop(duration) {
+    recordButton.colour = colours.recordOff;
+    recordButton.state = false;
+    let data = await recorder.stop();
+    let blobUrl = URL.createObjectURL(data);
+    recordBuffer = new Tone.ToneAudioBuffer(blobUrl);
+    uneffectedSongPlayer.buffer = recordBuffer;
+    effectedSongPlayer.buffer = recordBuffer;
+    // for some reason I can't read the length in samples or time of the file in the buffer on chrome, although it does work on firefox, so I'll have to use another method to get file length
+    fileLength = duration;
+    console.log(`fileLength = ${fileLength}`);
+    //playSong();
+}
+
+function playSong() {
+    console.log(`uneffectedSongPlayer.state = ${uneffectedSongPlayer.state}`);
+
+    if(uneffectedSongPlayer.state === "stopped"){
+        uneffectedSongPlayer.start();
+        effectedSongPlayer.start();
+        uneffectedAmpEnv.triggerAttack();
+        effectedAmpEnv.triggerAttack();
+        //effectedAmpEnv.triggerRelease("+0.1");
+        Tone.Transport.start();
+        playButtonState = true;
+        playButton.colour = colours.on;
+        playButton.text = 'stop';
+    }else{
+        uneffectedSongPlayer.stop();
+        effectedSongPlayer.stop();
+        Tone.Transport.stop();
+        playButton.colour = colours.playOff;
+        playButton.text = 'start';
     }
 
+    if(effectButtons[0].status === true){
+        Tone.Transport.clear(scheduledRepeatID); // clear the repeat above
+        effectButtons[0].status = false;
+        effect1(0);
+    }
+}
+
+function effectButtonPressed(button){
+    console.log(`effect button ${button+1} pressed`);
+    // effect1();
+    window[`effect${button+1}`](button);// this allows you to create a function name from a string and then call it
+}
+
+function effect1(button) {
+    if(effectButtons[button].status === false){
+        let sampleDivision
+        if(fileLength > 10){
+            sampleDivision = fileLength/(getRndInteger(4, 64));
+        }else if(fileLength > 3){
+            sampleDivision = fileLength/(getRndInteger(4, 16));
+        }
+        else{
+            sampleDivision = fileLength/(getRndInteger(1, 8));
+        }
+        let sustain = sampleDivision/2;
+        // effectedAmpEnv.triggerRelease();
+        //effectedAmpEnv.triggerAttackRelease(1);
+        console.log(`in effect1`);
+        scheduledRepeatID = Tone.Transport.scheduleRepeat(() => {
+            console.log("testing");
+            effectedAmpEnv.triggerAttackRelease(sustain);
+        }, sampleDivision);
+        effectButtons[button].colour = colours.effectOn;
+        effectButtons[button].status = true;
+        console.log(`id of transport = ${scheduledRepeatID}`);
+        chain();
+    }else{
+        Tone.Transport.clear(scheduledRepeatID); // clear the repeat above
+        effectedAmpEnv.triggerAttack();
+        effectButtons[button].colour = colours.effectOff;
+        effectButtons[button].status = false;
+    }
+}
+
+function effect2(button) {
+    console.log(`in effect2`);
+    if(effectButtons[button].status === false){
+        effectedSongPlayer.playbackRate = (Math.random()+0.01)*2;
+        effectButtons[button].colour = colours.effectOn;
+        effectButtons[button].status = true;
+    }else{
+        effectedSongPlayer.playbackRate = 1;
+        effectButtons[button].colour = colours.effectOff;
+        effectButtons[button].status = false;
+    }
+}
+
+function effect3(button) {
+    console.log('in effect3');
+    if(effectButtons[button].status === false){
+        reverb.decay = getRndInteger(6, 20);
+        // effectedAmpEnv.connect(reverb);
+        //effectedAmpEnv.disconnect(effectedMeter);
+        // reverb.connect(effectedMeter);
+        effectButtons[button].colour = colours.effectOn;
+        effectButtons[button].status = true;
+        chain();
+    }else{
+        //reverb.disconnect(effectedMeter);
+        // effectedAmpEnv.connect(effectedMeter);
+        effectButtons[button].colour = colours.effectOff;
+        effectButtons[button].status = false;
+        chain();
+        if(effectButtons[4].status === false){
+            effectedAmpEnv.disconnect(reverb);
+        }else{
+            pingPong.disconnect(reverb);
+        }
+    }
+}
+
+function effect4(button) {
+    console.log(`in effect4`);
+    if(effectButtons[button].status === false){
+        effectedSongPlayer.reverse = true;
+        effectButtons[button].colour = colours.effectOn;
+        effectButtons[button].status = true;
+    }else{
+        effectedSongPlayer.reverse = false;
+        effectButtons[button].colour = colours.effectOff;
+        effectButtons[button].status = false;
+    }
+}
+
+function effect5(button) {
+    console.log(`in effect5`);
+    if(effectButtons[button].status === false){
+        pingPong.delayTime = (Math.random()+0.01)*5;
+        //pingPong.delayTime = fileLength/(getRndInteger(4, 64));
+        //effectedAmpEnv.connect(pingPong);
+        effectButtons[button].colour = colours.effectOn;
+        effectButtons[button].status = true;
+        chain();
+    }else{
+        effectedAmpEnv.disconnect(pingPong);
+        effectButtons[button].colour = colours.effectOff;
+        effectButtons[button].status = false;
+        chain();
+    }
+}
+
+function chain(){
+    if(effectButtons[2].status === true && effectButtons[4].status === true){
+        console.log("chain1");
+        effectedSongPlayer.chain(effectedAmpEnv, pingPong, reverb, effectedMeter, Tone.Destination);
+    }else if(effectButtons[2].status === true){
+        console.log("chain2");
+        //effectedSongPlayer.disconnect();
+        effectedSongPlayer.chain(effectedAmpEnv, reverb, effectedMeter, Tone.Destination);
+    }else if(effectButtons[4].status === true){
+        console.log("chain3");
+        //effectedSongPlayer.disconnect();
+        effectedSongPlayer.chain(effectedAmpEnv, pingPong, effectedMeter, Tone.Destination);
+    }else{
+        console.log("chain4");
+        //effectedSongPlayer.disconnect();
+        effectedSongPlayer.chain(effectedAmpEnv, effectedMeter, Tone.Destination);
+    }
+}
 
 function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min +1) ) + min;
@@ -237,12 +578,11 @@ function chooseSample(){
     theSample = `audioFile${whichSound}.mp3`;
     console.log(`theSample = ${theSample}`);
     console.log(`usedSounds = ${usedSounds}`);
-
     assignSoundToPlayer();
 }
 
 function haveWeUsedSound(comparer) {
-    for(var i=0; i < usedSounds.length; i++) {
+    for(let i=0; i < usedSounds.length; i++) {
         if(usedSounds[i] === comparer){
             return true;
         }
@@ -251,11 +591,31 @@ function haveWeUsedSound(comparer) {
 };
 
 function assignSoundToPlayer() {
-    if(bufferToPlay === buffer1){
+    if(bufferToPlay === "start"){
         buffer0 = new Tone.ToneAudioBuffer(`/sounds/${theSample}`, () => {
             console.log("buffer 0 loaded");
             bufferToPlay = buffer0;
             currentBuffer = 0;
+            loadButton.colour = colours.loadOff;
+            console.log(`currentBuffer = ${currentBuffer}`);
+            if (interfaceState === 0){
+                reload();
+            }
+            reload();
+            lastBuffer = currentBuffer;
+            console.log(`lastBuffer = ${lastBuffer}`);
+            chooseSample();
+        },
+        () => {
+            interfaceState = 3;
+            console.log(`interfaceState = ${interfaceState}`)
+        });
+    }else if(bufferToPlay === buffer1){
+        buffer0 = new Tone.ToneAudioBuffer(`/sounds/${theSample}`, () => {
+            console.log("buffer 0 loaded");
+            bufferToPlay = buffer0;
+            currentBuffer = 0;
+            loadButton.colour = colours.loadOff;
             console.log(`currentBuffer = ${currentBuffer}`);
             if (interfaceState === 0){
                 reload();
@@ -270,6 +630,7 @@ function assignSoundToPlayer() {
             console.log("buffer 1 loaded");
             bufferToPlay = buffer1;
             currentBuffer = 1;
+            loadButton.colour = colours.loadOff;
             console.log(`currentBuffer = ${currentBuffer}`);
             if (interfaceState === 0){
                 reload();
@@ -285,13 +646,63 @@ function assignSoundToPlayer() {
 function reload() {
     console.log(`in reload`);
     if(lastBuffer !== currentBuffer){
-        player.buffer = bufferToPlay.get();
-        analyseFile();
+        let thisBuff = bufferToPlay.get();
+        uneffectedSongPlayer.buffer = thisBuff;
+        effectedSongPlayer.buffer = thisBuff;
+        getFileLength(thisBuff);
         interfaceState = 1;
-        buttonColour = offColour;
     }else{
         interfaceState = 0;
     }
+    console.log('when we getting here?');
     // buffer0.dispose();
     // chooseSample();
 }
+
+function getFileLength(buffer) {
+    console.log(`buffer duration = ${buffer.duration}`);
+    fileLength = buffer.duration;
+}
+
+function debounce(func, wait, immediate) {
+    // 'private' variable for instance
+    // The returned function will be able to reference this due to closure.
+    // Each call to the returned function will share this common timer.
+    var timeout;
+
+    // Calling debounce returns a new anonymous function
+    return function() {
+      // reference the context and args for the setTimeout function
+      var context = this,
+        args = arguments;
+
+      // Should the function be called now? If immediate is true
+      //   and not already in a timeout then the answer is: Yes
+      var callNow = immediate && !timeout;
+
+      // This is the basic debounce behaviour where you can call this
+      //   function several times, but it will only execute once
+      //   [before or after imposing a delay].
+      //   Each time the returned function is called, the timer starts over.
+      clearTimeout(timeout);
+
+      // Set the new timeout
+      timeout = setTimeout(function() {
+
+        // Inside the timeout function, clear the timeout variable
+        // which will let the next execution run when in 'immediate' mode
+        timeout = null;
+
+        // Check if the function already ran with the immediate flag
+        if (!immediate) {
+          // Call the original function with apply
+          // apply lets you define the 'this' object as well as the arguments
+          //    (both captured before setTimeout)
+          func.apply(context, args);
+        }
+      }, wait);
+
+      // Immediate mode and no wait timer? Execute the function..
+      if (callNow) func.apply(context, args);
+    }
+  }
