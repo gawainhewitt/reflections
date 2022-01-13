@@ -25,13 +25,18 @@ let numberOfEffectButtons = 5; //how many effect buttons?
 // set up the unneffected side of the installation - this drives the left visualisation
 // and will not be processed so not connected to destination. However all chain elements
 // still need to be present otherwise timing will be off for the visualisation
+let theVolume = -4;
 const uneffectedAmpEnv = new Tone.AmplitudeEnvelope({
     attack: 0.1,
     decay: 0.2,
     sustain: 1.0,
     release: 0.1
 });
-const uneffectedSongPlayer = new Tone.Player();
+const uneffectedSongPlayer = new Tone.Player({
+    volume: theVolume,
+    loop: true,
+});
+
 const uneffectedMeter = new Tone.Meter();
 uneffectedMeter.normalRange = true; // display volume as a number between 0 and 1 rather than as decibels
 uneffectedSongPlayer.connect(uneffectedAmpEnv);
@@ -49,11 +54,28 @@ const reverb = new Tone.Reverb ({
 });
 const pingPong = new Tone.PingPongDelay({
 });
-const effectedSongPlayer = new Tone.Player();
+const effectedSongPlayer = new Tone.Player({
+    volume: theVolume,
+    loop: true,
+});
 const effectedMeter = new Tone.Meter();
 effectedMeter.normalRange = true;
 // effectedSongPlayer.connect(effectedAmpEnv);
 // effectedAmpEnv.connect(effectedMeter);
+
+// uneffectedSongPlayer.set(
+//     {
+//       "volume": theVolume,
+//       "loop": true,
+//     }
+// );
+
+// effectedSongPlayer.set(
+//     {
+//       "volume": theVolume,
+//       "loop": true,
+//     }
+// );
 
 let recorderInitialised = false; // we will check to see if we can use the mic
 let mic, recorder;
@@ -61,7 +83,6 @@ let recordTime; //variable to store time of recording in as other method isn't c
 
 let whichSound; // which of the samples?
 let theSample; //current sample
-let theVolume = -4;
 let buffer0;
 let buffer1;
 let recordBuffer;
@@ -118,31 +139,6 @@ function setup() {  // setup p5
 
     setvisualisationWidth();
 
-    uneffectedSongPlayer.set(
-        {
-          "mute": false,
-          "volume": theVolume,
-          "autostart": false,
-          "fadeIn": 0,
-          "fadeOut": 0,
-          "loop": true,
-          "playbackRate": 1,
-          "reverse": false
-        }
-    );
-
-    effectedSongPlayer.set(
-        {
-          "mute": false,
-          "volume": theVolume,
-          "autostart": false,
-          "fadeIn": 0,
-          "fadeOut": 0,
-          "loop": true,
-          "playbackRate": 1,
-          "reverse": false,
-        }
-    );
     visualisationHeight = height;
     loadButton = ({
         x: width/4,
