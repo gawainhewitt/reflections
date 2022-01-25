@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "build": "rm -rf ./dist/* && mkdir ./dist/css && cp ./index.html ./dist/index.html && cp ./css/main.css ./dist/css/main.css && cp ./main.js ./dist/main.js && cp ./p5.min.js ./dist/p5.min.js && cp -avr ./sounds/ ./dist/"
+    "build": "rm -rf ./dist/* && mkdir ./dist/css && cp ./index.html ./dist/index.html && cp ./css/main.css ./dist/css/main.css && cp ./main.js ./dist/main.js && cp ./p5.min.js ./dist/p5.min.js && cp -avr ./sounds/ ./dist/ && cp -avr ./fonts/ ./dist/"
   },
   "repository": {
     "type": "git",

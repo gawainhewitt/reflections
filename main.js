@@ -5,11 +5,11 @@ let colours = ({
     //background: 'rgb(205, 181, 122)',
     startScreen: 'rgba(50, 50, 50, 0.75)',
     infoText: 'white',
-    loadOff: 'rgb(50',
-    playOff: 'rgb(0, 255, 0)',
-    recordOff: 'rgb(255, 0, 0)',
+    loadOff: 'rgb(205, 181, 122)',
+    playOff: 'rgb(205, 181, 122)',
+    recordOff: 'rgb(205, 181, 122)',
     on: 'rgb(0,255,255)',
-    effectOff: 'rgb(0, 255, 0)',
+    effectOff: 'rgb(205, 181, 122)',
     effectOn:'rgb(255, 0, 0)',
     //stroke: 'rgb(204, 0, 73)',
     stroke: 'rgb(205, 181, 122)',
@@ -98,6 +98,7 @@ let numberOfSamples = 5; // the number of samples that we are
 let started = false; //have we invoked Tone.start() and left the info screen?
 let fileLength; // store the length of a sample in seconds in here
 let scheduledRepeatID; // variable to store the scheduleRepeat in (as the function returns this). We can then use this to cancel it later.
+let fontRegular;
 
 // ******DIMENSIONS******
 
@@ -118,6 +119,7 @@ let rectangleX, rectangleY, rectangleWidth, rectangleHeight;
 
 function preload(){
     chooseSample();
+    fontRegular = loadFont('fonts/Sprat-CondensedLight.otf');
 }
 
 function setup() {  // setup p5
@@ -148,21 +150,21 @@ function setup() {  // setup p5
         y: height/5,
         state: false,
         colour: colours.loadOff,
-        text: 'load'
+        text: 'LOAD'
     });
     playButton = ({
+        x: (width/4) * 2,
+        y: (height/7) * 2.5,
+        state: false,
+        colour: colours.playOff,
+        text: 'PLAY'
+    });
+    recordButton = ({
         x: (width/4) * 3,
         y: height/5,
         state: false,
-        colour: colours.playOff,
-        text: 'play'
-    });
-    recordButton = ({
-        x: (width/4) * 2,
-        y: height/5,
-        state: false,
         colour: colours.recordOff,
-        text: 'record'
+        text: 'RECORD'
     });
     let bottomButtonsY = (height/5)*4;
     createButtonPositions(bottomButtonsY);
@@ -203,26 +205,29 @@ function draw() {
         noFill();
         drawWigmoreLogo(loadButton.x, loadButton.y, buttonRadius);
 
-        //fill(loadButton.colour);
+        stroke(loadButton.colour);
         //ellipse(loadButton.x, loadButton.y, buttonRadius);
-        // fill(0);
-        // text(loadButton.text, loadButton.x, loadButton.y);
+        fill(loadButton.colour);
+        text(loadButton.text, loadButton.x, loadButton.y + buttonRadius * 0.7);
         if(Tone.UserMedia.supported){
-            // {fill(recordButton.colour);
+            stroke(recordButton.colour);
             // ellipse(recordButton.x, recordButton.y, buttonRadius);
-            // fill(0);
-            // text(recordButton.text, recordButton.x, recordButton.y);}
+            textFont(fontRegular);
+            fill(recordButton.colour);
+            text(recordButton.text, recordButton.x, recordButton.y + buttonRadius * 0.7);
+            noFill();
             drawWigmoreLogo(recordButton.x, recordButton.y, buttonRadius);
         }
         if(effectedSongPlayer.loaded === true){
-            // fill(playButton.colour);
+            stroke(playButton.colour);
             // ellipse(playButton.x, playButton.y, buttonRadius);
-            // fill(0);
-            // text(playButton.text, playButton.x, playButton.y);
-            drawWigmoreLogo(playButton.x, playButton.y, buttonRadius);
+            fill(playButton.colour);
+            text(playButton.text, playButton.x, playButton.y + buttonRadius *1.2);
+            noFill();
+            drawWigmoreLogo(playButton.x, playButton.y, buttonRadius*2);
         }
         for(let i = 0; i < numberOfEffectButtons; i++){
-            // fill(effectButtons[i].colour);
+            stroke(effectButtons[i].colour);
             // ellipse(effectButtons[i].x, effectButtons[i].y, buttonRadius);
             // fill(0);
             // text(effectButtons[i].text, effectButtons[i].x, effectButtons[i].y);
@@ -239,7 +244,7 @@ function draw() {
     }
     stroke(colours.stroke);
     strokeWeight(1);
-    let x = width/2 - visualisationWidth;
+    let x = ((width/50)*25.16 - visualisationWidth)-buttonRadius;
     let y = height/3;
     let startX = x;
     let startY = y;
@@ -271,7 +276,7 @@ function draw() {
         startX = startX + visualisationWidth/visualisation.length;
     }
 
-    let x2 = width/2;
+    let x2 = width/2 + buttonRadius;
     let y2 = height/3;
     let startX2 = x2;
     let startY2 = y2;
@@ -346,7 +351,7 @@ function handleClick() {
         }
         if(uneffectedSongPlayer.loaded === true){
             let d2 = dist(mouseX, mouseY, playButton.x, playButton.y);
-            if (d2 < buttonRadius/2) {
+            if (d2 < buttonRadius) {
                 debounce(playSong(), 200);
             }
         }
@@ -364,7 +369,7 @@ function loadButtonPressed() {
     effectedSongPlayer.stop();
     Tone.Transport.stop();
     playButton.colour = colours.playOff;
-    playButton.text = 'start';
+    playButton.text = 'PLAY';
     reload();
     lastBuffer = currentBuffer;
     console.log(`lastBuffer = ${lastBuffer}`);
@@ -378,7 +383,7 @@ function recordButtonPressed(){
     effectedSongPlayer.stop();
     Tone.Transport.stop();
     playButton.colour = colours.playOff;
-    playButton.text = 'start';
+    playButton.text = 'PLAY';
     if(recordButton.state ===false){
         recordButton.colour = colours.on;
         recordButton.state = true;
@@ -424,13 +429,13 @@ function playSong() {
         Tone.Transport.start();
         playButtonState = true;
         playButton.colour = colours.on;
-        playButton.text = 'stop';
+        playButton.text = 'STOP';
     }else{
         uneffectedSongPlayer.stop();
         effectedSongPlayer.stop();
         Tone.Transport.stop();
         playButton.colour = colours.playOff;
-        playButton.text = 'start';
+        playButton.text = 'PLAY';
     }
 
     if(effectButtons[0].status === true){
