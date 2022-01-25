@@ -1,7 +1,8 @@
 // ******COLOURS******
 
 let colours = ({
-    background: 'rgb(255, 255, 0)',
+    background: 'rgb(204, 0, 73)',
+    //background: 'rgb(205, 181, 122)',
     startScreen: 'rgba(50, 50, 50, 0.75)',
     infoText: 'white',
     loadOff: 'rgb(50',
@@ -10,6 +11,8 @@ let colours = ({
     on: 'rgb(0,255,255)',
     effectOff: 'rgb(0, 255, 0)',
     effectOn:'rgb(255, 0, 0)',
+    //stroke: 'rgb(204, 0, 73)',
+    stroke: 'rgb(205, 181, 122)',
 });
 
 //******BUTTONS******/
@@ -196,28 +199,34 @@ function draw() {
     }else if(interfaceState === 1){
         textAlign(CENTER, CENTER);
         textSize(cnvDimension/40);
-        noStroke();
-        fill(loadButton.colour);
-        ellipse(loadButton.x, loadButton.y, buttonRadius);
-        fill(0);
-        text(loadButton.text, loadButton.x, loadButton.y);
+        // noStroke();
+        noFill();
+        drawWigmoreLogo(loadButton.x, loadButton.y, buttonRadius);
+
+        //fill(loadButton.colour);
+        //ellipse(loadButton.x, loadButton.y, buttonRadius);
+        // fill(0);
+        // text(loadButton.text, loadButton.x, loadButton.y);
         if(Tone.UserMedia.supported){
-            {fill(recordButton.colour);
-            ellipse(recordButton.x, recordButton.y, buttonRadius);
-            fill(0);
-            text(recordButton.text, recordButton.x, recordButton.y);}
+            // {fill(recordButton.colour);
+            // ellipse(recordButton.x, recordButton.y, buttonRadius);
+            // fill(0);
+            // text(recordButton.text, recordButton.x, recordButton.y);}
+            drawWigmoreLogo(recordButton.x, recordButton.y, buttonRadius);
         }
         if(effectedSongPlayer.loaded === true){
-            fill(playButton.colour);
-            ellipse(playButton.x, playButton.y, buttonRadius);
-            fill(0);
-            text(playButton.text, playButton.x, playButton.y);
+            // fill(playButton.colour);
+            // ellipse(playButton.x, playButton.y, buttonRadius);
+            // fill(0);
+            // text(playButton.text, playButton.x, playButton.y);
+            drawWigmoreLogo(playButton.x, playButton.y, buttonRadius);
         }
         for(let i = 0; i < numberOfEffectButtons; i++){
-            fill(effectButtons[i].colour);
-            ellipse(effectButtons[i].x, effectButtons[i].y, buttonRadius);
-            fill(0);
-            text(effectButtons[i].text, effectButtons[i].x, effectButtons[i].y);
+            // fill(effectButtons[i].colour);
+            // ellipse(effectButtons[i].x, effectButtons[i].y, buttonRadius);
+            // fill(0);
+            // text(effectButtons[i].text, effectButtons[i].x, effectButtons[i].y);
+            drawWigmoreLogo(effectButtons[i].x, effectButtons[i].y, buttonRadius);
         }
     }else if(interfaceState === 3){
         noStroke();
@@ -228,8 +237,8 @@ function draw() {
         textSize(cnvDimension/30);
         text("Network Problems, click to try again", rectangleX, rectangleY, rectangleWidth, rectangleHeight);// same dimensions as the rectangle above
     }
-    stroke(0);
-    strokeWeight(3);
+    stroke(colours.stroke);
+    strokeWeight(1);
     let x = width/2 - visualisationWidth;
     let y = height/3;
     let startX = x;
@@ -701,4 +710,86 @@ function debounce(func, wait, immediate) {
       // Immediate mode and no wait timer? Execute the function..
       if (callNow) func.apply(context, args);
     }
+  }
+
+  function drawWigmoreLogo(x, y, size){
+    // so it can be moved and scaled the point is related to x at the original scale - in this case its 5 less, then divided by 100 (which is the size of the circle in this picture at original scale) and multiplied by the new size amount.
+
+    let x1 = x-(5/100)*size;
+    let y1 = y-(78/100)*size;
+    let x2 = x+(42/100)*size;
+    let y2 = y-(36/100)*size;
+    let x3 = x-(25/100)*size;
+    let y3 = y-(18/100)*size;
+    let x4 = x+(2/100)*size;
+    let y4 = y+(9/100)*size;
+    let x5 = x-(71/100)*size;
+    let y5 = y-(4/100)*size;
+    let x6 = x+(1/100)*size;
+    let y6 = y-(51/100)*size;
+    let x7 = x-(5/100)*size;
+    let y7 = y-(78/100)*size;
+    let x8 = x-(27/100)*size;
+    let y8 = y-(25/100)*size;
+    let x9 = x+(54/100)*size;
+    let y9 = y-(27/100)*size;
+    let x10 = x+(44/100)*size;
+    let y10 = y+(12/100)*size;
+    let x11 = x-(3/100)*size;
+    let y11 = y-(24/100)*size;
+    let x12 = x+(77/100)*size;
+    let y12 = y+(41/100)*size;
+    let x13 = x-(19/100)*size;
+    let y13 = y+(33/100)*size;
+    let x14 = x+(41/100)*size;
+    let y14 = y+(27/100)*size;
+    let x15 = x-(48/100)*size;
+    let y15 = y+(46/100)*size;
+    let x16 = x-(31/100)*size;
+    let y16 = y-(10/100)*size;
+    let x17 = x+(51/100)*size;
+    let y17 = y-(4/100)*size;
+    let x18 = x+(39/100)*size;
+    let y18 = y-(38/100)*size;
+    let x19 = x+(12/100)*size;
+    let y19 = y-(42/100)*size;
+
+    //circle(x1, y1, 10);
+
+    beginShape();
+    vertex(x1,y1);
+    bezierVertex(x2, y2, x3, y3, x4, y4);
+    bezierVertex(x5, y5, x6, y6, x7, y7);
+    endShape(CLOSE);
+
+    beginShape();
+    vertex(x4, y4);
+    bezierVertex(x8, y8, x9, y9, x10, y10);
+    endShape();
+
+    beginShape();
+    vertex(x4, y4);
+    bezierVertex(x11, y11, x12, y12, x13, y13);
+    endShape();
+
+    beginShape();
+    vertex(x4, y4);
+    bezierVertex(x14, y14, x15, y15, x16, y16);
+    endShape();
+
+    beginShape();
+    vertex(x10, y10);
+    bezierVertex(x17, y17, x18, y18, x19, y19);
+    endShape();
+
+    arc(x, y, size, size, 4.97, 4.37);
+
+    // for self drawing circle uncomment below and add global variable ang
+
+    // arc(x, y, size, size, 4.97, ang);
+    // if(ang < 4.37-0.1){
+    //   ang = ang + 0.1;
+    // }else{
+    //   ang = 4.37;
+    // }
   }
