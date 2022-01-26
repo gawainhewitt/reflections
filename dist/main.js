@@ -171,13 +171,15 @@ function setup() {  // setup p5
     chain();
 }
 
+let effectText = ['RIPPLE', 'DEPTH', 'HALL', 'FACE', 'CAVE'];
+
 function createButtonPositions(bottomButtonsY) {
     for(let i = 0; i < numberOfEffectButtons; i++){
         effectButtons.push({
             x: (width/(numberOfEffectButtons+1))*(i+1),
             y: bottomButtonsY,
             colour: colours.effectOff,
-            text: `fx${i+1}`,
+            text: effectText[i],
             status: false,
         });
     }
@@ -230,7 +232,9 @@ function draw() {
             stroke(effectButtons[i].colour);
             // ellipse(effectButtons[i].x, effectButtons[i].y, buttonRadius);
             // fill(0);
-            // text(effectButtons[i].text, effectButtons[i].x, effectButtons[i].y);
+            fill(effectButtons[i].colour);
+            text(effectButtons[i].text, effectButtons[i].x, effectButtons[i].y + buttonRadius *0.7);
+            noFill();
             drawWigmoreLogo(effectButtons[i].x, effectButtons[i].y, buttonRadius);
         }
     }else if(interfaceState === 3){
