@@ -15,6 +15,12 @@ let colours = ({
     stroke: 'rgb(205, 181, 122)',
 });
 
+// ******FONTS AND IMAGES******
+
+let fontRegular;
+let wigmoreLogo;
+let learningLogo;
+
 //******BUTTONS******/
 
 let loadButton; // in setup this becomes an object with all the ingredients for a load button
@@ -98,7 +104,6 @@ let numberOfSamples = 5; // the number of samples that we are
 let started = false; //have we invoked Tone.start() and left the info screen?
 let fileLength; // store the length of a sample in seconds in here
 let scheduledRepeatID; // variable to store the scheduleRepeat in (as the function returns this). We can then use this to cancel it later.
-let fontRegular;
 
 // ******DIMENSIONS******
 
@@ -119,7 +124,9 @@ let rectangleX, rectangleY, rectangleWidth, rectangleHeight;
 
 function preload(){
     chooseSample();
-    fontRegular = loadFont('fonts/Sprat-CondensedLight.otf');
+    fontRegular = loadFont('assets/Sprat-CondensedLight.otf');
+    wigmoreLogo = loadImage('assets/wigmoreLogoBlack.png');
+    learningLogo = loadImage('assets/learningLogo.png');
 }
 
 function setup() {  // setup p5
@@ -145,6 +152,15 @@ function setup() {  // setup p5
     setvisualisationWidth();
 
     visualisationHeight = height;
+
+    createButtonPositions();
+    chain();
+    textFont(fontRegular);
+}
+
+let effectText = ['RIPPLE', 'DEPTH', 'HALL', 'FACE', 'CAVE'];
+
+function createButtonPositions() {
     loadButton = ({
         x: width/4,
         y: height/5,
@@ -167,13 +183,6 @@ function setup() {  // setup p5
         text: 'RECORD'
     });
     let bottomButtonsY = (height/5)*4;
-    createButtonPositions(bottomButtonsY);
-    chain();
-}
-
-let effectText = ['RIPPLE', 'DEPTH', 'HALL', 'FACE', 'CAVE'];
-
-function createButtonPositions(bottomButtonsY) {
     for(let i = 0; i < numberOfEffectButtons; i++){
         effectButtons.push({
             x: (width/(numberOfEffectButtons+1))*(i+1),
@@ -315,13 +324,29 @@ function draw() {
         fill(colours.startScreen); // background
         rect(0, 0, width, height);
         fill(colours.infoText);
+        imageMode(CENTER);
+        image(learningLogo, width/2, height/5);
+        image(wigmoreLogo, width/2, height/5*4);
         text('click to start', width/2, height/2);
     }
 }
 
 function windowResized() {
     setvisualisationWidth();
+    visualisationHeight = height;
     resizeCanvas(windowWidth, windowHeight);
+    loadButton.x = width/4;
+    loadButton.y = height/5;
+    playButton.x = (width/4) * 2;
+    playButton.y = (height/7) * 2.5;
+    recordButton.x = (width/4) * 3;
+    recordButton.y = height/5
+
+    let bottomButtonsY = (height/5)*4;
+    for(let i = 0; i < numberOfEffectButtons; i++){
+        effectButtons[i].x = (width/(numberOfEffectButtons+1))*(i+1);
+        effectButtons[i].y = bottomButtonsY;
+    }
 }
 
 function setvisualisationWidth() {
@@ -606,7 +631,7 @@ function haveWeUsedSound(comparer) {
 
 function assignSoundToPlayer() {
     if(bufferToPlay === "start"){
-        buffer0 = new Tone.ToneAudioBuffer(`/sounds/${theSample}`, () => {
+        buffer0 = new Tone.ToneAudioBuffer(`/assets/${theSample}`, () => {
             console.log("buffer 0 loaded");
             bufferToPlay = buffer0;
             currentBuffer = 0;
@@ -625,7 +650,7 @@ function assignSoundToPlayer() {
             console.log(`interfaceState = ${interfaceState}`)
         });
     }else if(bufferToPlay === buffer1){
-        buffer0 = new Tone.ToneAudioBuffer(`/sounds/${theSample}`, () => {
+        buffer0 = new Tone.ToneAudioBuffer(`/assets/${theSample}`, () => {
             console.log("buffer 0 loaded");
             bufferToPlay = buffer0;
             currentBuffer = 0;
@@ -640,7 +665,7 @@ function assignSoundToPlayer() {
             console.log(`interfaceState = ${interfaceState}`)
         });
     }else{
-        buffer1 = new Tone.ToneAudioBuffer(`/sounds/${theSample}`, () => {
+        buffer1 = new Tone.ToneAudioBuffer(`/assets/${theSample}`, () => {
             console.log("buffer 1 loaded");
             bufferToPlay = buffer1;
             currentBuffer = 1;
