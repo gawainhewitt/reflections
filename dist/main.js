@@ -401,6 +401,11 @@ function setvisualisationWidth() {
     visualisationThickness = width/500;
     wigmoreLogoThickness = width/200;
     buttonTextThickness = width/900;
+    visualisationHeight = height;
+    rectangleX = width/6;
+    rectangleY = height/6;
+    rectangleWidth = width/1.5;
+    rectangleHeight = height/1.5;
     if(height > width){
         buttonRadius = visualisationWidth/3.5;
         sizeOfLogo = width;
@@ -410,11 +415,6 @@ function setvisualisationWidth() {
         sizeOfLogo = height;
         infoFont = width/50;
     }
-    visualisationHeight = height;
-    rectangleX = width/6;
-    rectangleY = height/6;
-    rectangleWidth = width/1.5;
-    rectangleHeight = height/1.5;
 }
 
 function handleClick() {
