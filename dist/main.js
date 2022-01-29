@@ -18,8 +18,15 @@ let colours = ({
 // ******FONTS AND IMAGES******
 
 let fontRegular;
+let fxFont1, fxFont2, fxFont3, fxFont4, fxFont5;
 let wigmoreLogo;
 let learningLogo;
+let wigmoreLogoThickness; // how bold are the buttons
+let buttonTextThickness1; // how bold is the text
+let sizeOfLogo;
+let startTime = 0; //variable to store time in so start sign is animated
+let showStart = false; // do we show start over the log (for the animation)
+let infoFont;
 
 //******BUTTONS******/
 
@@ -95,7 +102,7 @@ let theSample; //current sample
 let buffer0;
 let buffer1;
 let recordBuffer;
-let interfaceState = 0; // 0 displays the text loading, 1 is a button, 2 is a visualisation of the sound, 3 is error loading sound to buffer
+let interfaceState = 0; // 0 displays the text loading, 1 is a button, 2 is info screen, 3 is error loading sound to buffer
 let usedSounds = new Array;
 let bufferToPlay = "start";
 let lastBuffer;
@@ -107,16 +114,17 @@ let scheduledRepeatID; // variable to store the scheduleRepeat in (as the functi
 
 // ******DIMENSIONS******
 
-let cnvDimension; // how big is the canvas?
 let waveformRatio = 3; // number that sets the waveform size relative to the screen
 let buttonRadius; // variable to store the actual buttonRadius in
 let visualisationWidth; // how wide each half of the visualisation is
 let visualisationHeight; // max height of the visualisation
-let visualisation = new Array(100); // to store the left hand data for visualisation
+let visualisationYPosition; // where is the visualistion on the y axis?
+let visualisation = new Array(50); // to store the left hand data for visualisation
+let visualisationThickness; // how thick is the visualisation
 for(let i = 0; i < visualisation.length; i++){ // populate the array
     visualisation[i] = 0;
 }
-let visualisation2 = new Array(100); // to store the right hand data for visualisation
+let visualisation2 = new Array(50); // to store the right hand data for visualisation
 for(let i = 0; i < visualisation2.length; i++){ // populate the array
     visualisation2[i] = 0;
 }
@@ -125,42 +133,55 @@ let rectangleX, rectangleY, rectangleWidth, rectangleHeight;
 function preload(){
     chooseSample();
     fontRegular = loadFont('assets/Sprat-CondensedLight.otf');
-    wigmoreLogo = loadImage('assets/wigmoreLogoBlack.png');
-    learningLogo = loadImage('assets/learningLogo.png');
+    fxFont1 = loadFont('assets/Half-51.otf');
+    fxFont2 = loadFont('assets/Version_0.1_50_skeletor.ttf');
+    fxFont3 = loadFont('assets/terminal-grotesque_open.otf');
+    fxFont4 = loadFont('assets/wavy.otf');
+    fxFont5 = loadFont('assets/GapSans.ttf');
+    wigmoreLogo = loadImage('assets/manLogo.jpeg');
 }
 
 function setup() {  // setup p5
+    setupCanvas();
+    createButtonPositions();
+    setvisualisationWidth();
+    chain();
+    setupTouch();
+    // pixelDensity(1);
+}
 
+function draw() {
+    if(!started){
+        loadScreens();
+    }else{
+    background(colours.background); // background
+    //imageMode(CENTER);
+    audioVisualisation();
+    buildTheLook();
+    }
+}
+
+function setupTouch(){
+    // *** add vanilla JS event listeners for touch which i want to use in place of the p5 ones as I believe that they are significantly faster
+    let el = document.getElementById("p5parent");
+    el.addEventListener("click", handleClick); // this calls the function handleClick
+}
+
+function setupCanvas(){
     let masterDiv = document.getElementById("container");
     let divPos = masterDiv.getBoundingClientRect(); //The returned value is a DOMRect object which is the smallest rectangle which contains the entire element, including its padding and border-width. The left, top, right, bottom, x, y, width, and height properties describe the position and size of the overall rectangle in pixels.
     let masterLeft = divPos.left; // distance from left of screen to left edge of bounding box
     let masterRight = divPos.right; // distance from left of screen to the right edge of bounding box
-    cnvDimension = masterRight - masterLeft; // size of div -however in some cases this is wrong, so i am now using css !important to set the size and sca;ing - but have kept this to work out size of other elements if needed
-
-    console.log("canvas size = " + cnvDimension);
-
-    noStroke(); // no stroke on the drawings
-
     let cnv = createCanvas(windowWidth, windowHeight); // create canvas - because i'm now using css size and !important this is really about the ratio between them, so the second number effects the shape. First number will be moved by CSS
     cnv.id('mycanvas'); // assign id to the canvas so i can style it - this is where the css dynamic sizing is applied
     cnv.parent('p5parent'); //put the canvas in a div with this id if needed - this also needs to be sized
-
-    // *** add vanilla JS event listeners for touch which i want to use in place of the p5 ones as I believe that they are significantly faster
-    let el = document.getElementById("p5parent");
-    el.addEventListener("click", handleClick);
-
-    setvisualisationWidth();
-
-    visualisationHeight = height;
-
-    createButtonPositions();
-    chain();
-    textFont(fontRegular);
 }
 
-let effectText = ['RIPPLE', 'DEPTH', 'HALL', 'FACE', 'CAVE'];
+let effectText = ['RIPPLE', 'DEPTH', 'HALL', 'REFLECT', 'ECHO'];
+let effectFont;
 
 function createButtonPositions() {
+    effectFont = [fxFont1, fxFont2, fxFont3, fxFont4, fxFont5];
     loadButton = ({
         x: width/4,
         y: height/5,
@@ -170,7 +191,7 @@ function createButtonPositions() {
     });
     playButton = ({
         x: (width/4) * 2,
-        y: (height/7) * 2.5,
+        y: (height/7) * 3,
         state: false,
         colour: colours.playOff,
         text: 'PLAY'
@@ -190,75 +211,110 @@ function createButtonPositions() {
             colour: colours.effectOff,
             text: effectText[i],
             status: false,
+            font: effectFont[1],
         });
     }
 }
 
-function draw() {
-    rectangleX = loadButton.x - buttonRadius/2;
-    rectangleY = loadButton.y - buttonRadius/4;
-    rectangleWidth = buttonRadius;
-    rectangleHeight = buttonRadius/2;
-    background(colours.background); // background
-    //imageMode(CENTER);
-    if(interfaceState === 0){
-        noStroke();
-        fill(loadButton.colour);
-        //rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
-        fill(150);
-        textAlign(CENTER, CENTER);
-        textSize(cnvDimension/20);
-        text("Loading", loadButton.x, loadButton.y);
-    }else if(interfaceState === 1){
-        textAlign(CENTER, CENTER);
-        textSize(cnvDimension/40);
-        // noStroke();
-        noFill();
-        drawWigmoreLogo(loadButton.x, loadButton.y, buttonRadius);
+function buildTheLook(){
+    stroke(0);
+    fill(loadButton.colour);
+    textSize(width/25);
+    textFont(fontRegular);
+    textAlign(CENTER, CENTER);
+    if(interfaceState === 0){ // loading
+        rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
+        fill(0);
+        text("LOADING", rectangleX, rectangleY, rectangleWidth, rectangleHeight);// same dimensions as the rectangle above
+    }else if(interfaceState === 2){ // info screen
+        rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
+        textSize(infoFont);
+        fill(0);
+        strokeWeight(buttonTextThickness);
+        let textY1 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5));
+        let textY2 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*2);
+        let textY3 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3.5);
+        let textY4 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*4.5);
+        text("Reflections is an online sound installation by Gawain Hewitt.", rectangleX, textY1, rectangleWidth, rectangleHeight);
+        text("Use the load button to load new audio from the Wigmore Hall learning programme, and the record button to record your own sounds. Use the bottom buttons to change the sounds.", rectangleX, textY2, rectangleWidth, rectangleHeight);
+        text("If on an iPhone you will need to switch the mute switch on the side to “on”.", rectangleX, textY3, rectangleWidth, rectangleHeight);
+        text("Best experienced on Chrome.", rectangleX, textY4, rectangleWidth, rectangleHeight);
 
+    }else if(interfaceState === 3){ // network error
+        rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
+        fill(0);
+        text("Network Problems, click to try again", rectangleX, rectangleY, rectangleWidth, rectangleHeight);// same dimensions as the rectangle above
+    }else if(interfaceState === 1){ // the installation
+        textSize(width/40);
+        noFill();
+        strokeWeight(wigmoreLogoThickness); // how bold are the icons
         stroke(loadButton.colour);
-        //ellipse(loadButton.x, loadButton.y, buttonRadius);
+        drawWigmoreLogo(loadButton.x, loadButton.y, buttonRadius);
         fill(loadButton.colour);
+        strokeWeight(buttonTextThickness);
+        textFont(fontRegular);
         text(loadButton.text, loadButton.x, loadButton.y + buttonRadius * 0.7);
         if(Tone.UserMedia.supported){
-            stroke(recordButton.colour);
-            // ellipse(recordButton.x, recordButton.y, buttonRadius);
-            textFont(fontRegular);
-            fill(recordButton.colour);
-            text(recordButton.text, recordButton.x, recordButton.y + buttonRadius * 0.7);
             noFill();
+            strokeWeight(wigmoreLogoThickness);
+            stroke(recordButton.colour);
             drawWigmoreLogo(recordButton.x, recordButton.y, buttonRadius);
+            fill(recordButton.colour);
+            strokeWeight(buttonTextThickness);
+            text(recordButton.text, recordButton.x, recordButton.y + buttonRadius * 0.7);
         }
         if(effectedSongPlayer.loaded === true){
-            stroke(playButton.colour);
-            // ellipse(playButton.x, playButton.y, buttonRadius);
-            fill(playButton.colour);
-            text(playButton.text, playButton.x, playButton.y + buttonRadius *1.2);
             noFill();
+            strokeWeight(wigmoreLogoThickness);
+            stroke(playButton.colour);
             drawWigmoreLogo(playButton.x, playButton.y, buttonRadius*2);
+            fill(playButton.colour);
+            strokeWeight(buttonTextThickness);
+            text(playButton.text, playButton.x, playButton.y + buttonRadius *1.2);
+        }else{
+            interfaceState = 3;
         }
         for(let i = 0; i < numberOfEffectButtons; i++){
             stroke(effectButtons[i].colour);
-            // ellipse(effectButtons[i].x, effectButtons[i].y, buttonRadius);
-            // fill(0);
+            strokeWeight(buttonTextThickness);
+            textFont(effectFont[i]);
             fill(effectButtons[i].colour);
             text(effectButtons[i].text, effectButtons[i].x, effectButtons[i].y + buttonRadius *0.7);
             noFill();
+            stroke(effectButtons[i].colour);
+            strokeWeight(wigmoreLogoThickness);
             drawWigmoreLogo(effectButtons[i].x, effectButtons[i].y, buttonRadius);
         }
-    }else if(interfaceState === 3){
-        noStroke();
-        fill(loadButton.colour);
-        rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
-        fill(150);
-        textAlign(CENTER, CENTER);
-        textSize(cnvDimension/30);
-        text("Network Problems, click to try again", rectangleX, rectangleY, rectangleWidth, rectangleHeight);// same dimensions as the rectangle above
     }
-    stroke(colours.stroke);
-    strokeWeight(1);
+}
+
+function loadScreens(){
+    background(0);
+    textAlign(CENTER, CENTER);
+    fill(colours.startScreen); // background
+    rect(0, 0, width, height);
+    fill(0);
+    strokeWeight(buttonTextThickness);
+    stroke(0);
+    imageMode(CORNER);
+    image(wigmoreLogo, 0, 0, width, height, 0, 0, 50, 50);
+    imageMode(CENTER);
+    image(wigmoreLogo, width/2, height/2, sizeOfLogo, sizeOfLogo);
+    textSize(sizeOfLogo/20);
+    if(frameCount-startTime > frameRate()/2){// animate start
+        showStart = !showStart;
+        startTime = frameCount;
+    }
+    if(showStart){
+        text('START', width/2, height/2);
+    }
+}
+
+function audioVisualisation(){
+    stroke(playButton.colour);
+    strokeWeight(visualisationThickness);
     let x = ((width/50)*25.16 - visualisationWidth)-buttonRadius;
-    let y = height/3;
+    let y = visualisationYPosition;
     let startX = x;
     let startY = y;
     let endX;
@@ -275,7 +331,6 @@ function draw() {
     }else{
         level = uneffectedMeter.getValue();
     }
-    let level2 = effectedMeter.getValue();
     visualisation.push(level);
     visualisation.splice(0, 1);
     for(let i = 0; i < visualisation.length-1; i++){
@@ -290,11 +345,12 @@ function draw() {
     }
 
     let x2 = width/2 + buttonRadius;
-    let y2 = height/3;
+    let y2 = y;
     let startX2 = x2;
     let startY2 = y2;
     let endX2;
     let endY2;
+    let level2 = effectedMeter.getValue();
     visualisation2.push(level2);
     visualisation2.splice(0, 1);
     if(effectButtons[3].status === false){
@@ -320,20 +376,10 @@ function draw() {
             startX2 = startX2 + visualisationWidth/visualisation2.length;
         }
     }
-    if(!started){
-        fill(colours.startScreen); // background
-        rect(0, 0, width, height);
-        fill(colours.infoText);
-        imageMode(CENTER);
-        image(learningLogo, width/2, height/5);
-        image(wigmoreLogo, width/2, height/5*4);
-        text('click to start', width/2, height/2);
-    }
 }
 
 function windowResized() {
     setvisualisationWidth();
-    visualisationHeight = height;
     resizeCanvas(windowWidth, windowHeight);
     loadButton.x = width/4;
     loadButton.y = height/5;
@@ -351,19 +397,35 @@ function windowResized() {
 
 function setvisualisationWidth() {
     visualisationWidth = (width/waveformRatio);
+    visualisationYPosition = playButton.y;
+    visualisationThickness = width/500;
+    wigmoreLogoThickness = width/200;
+    buttonTextThickness = width/900;
     if(height > width){
         buttonRadius = visualisationWidth/3.5;
+        sizeOfLogo = width;
+        infoFont = height/50;
     }else{
         buttonRadius = visualisationWidth/5;
+        sizeOfLogo = height;
+        infoFont = width/50;
     }
+    visualisationHeight = height;
+    rectangleX = width/6;
+    rectangleY = height/6;
+    rectangleWidth = width/1.5;
+    rectangleHeight = height/1.5;
 }
 
 function handleClick() {
     if(!started){
         Tone.start();
         started = true;
+        interfaceState = 2;
+    }else if(interfaceState === 2){
+        interfaceState = 1;
     }else if(interfaceState === 3){
-        console.log("network click");
+        console.log("network problems click");
         interfaceState = 0;
         assignSoundToPlayer();
     }else{
