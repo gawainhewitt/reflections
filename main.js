@@ -395,6 +395,23 @@ function windowResized() {
     }
 }
 
+function deviceTurned() {
+    setvisualisationWidth();
+    resizeCanvas(windowWidth, windowHeight);
+    loadButton.x = width/4;
+    loadButton.y = height/5;
+    playButton.x = (width/4) * 2;
+    playButton.y = (height/7) * 2.5;
+    recordButton.x = (width/4) * 3;
+    recordButton.y = height/5
+
+    let bottomButtonsY = (height/5)*4;
+    for(let i = 0; i < numberOfEffectButtons; i++){
+        effectButtons[i].x = (width/(numberOfEffectButtons+1))*(i+1);
+        effectButtons[i].y = bottomButtonsY;
+    }
+}
+
 function setvisualisationWidth() {
     visualisationWidth = (width/waveformRatio);
     visualisationYPosition = playButton.y;
