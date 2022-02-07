@@ -416,7 +416,6 @@ function audioVisualisation(){
 }
 
 function windowResized() {
-    setvisualisationWidth();
     resizeCanvas(windowWidth, windowHeight);
     loadButton.x = width/4;
     loadButton.y = height/5;
@@ -424,6 +423,8 @@ function windowResized() {
     playButton.y = (height/7) * 2.5;
     recordButton.x = (width/4) * 3;
     recordButton.y = height/5
+    setvisualisationWidth();
+
 
     let bottomButtonsY = (height/5)*4;
     for(let i = 0; i < numberOfEffectButtons; i++){
