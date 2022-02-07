@@ -255,7 +255,7 @@ function buildTheLook(){
         let textY1 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*1.5);
         let textY2 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*2.5);
         let textY3 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3);
-        let textY4 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3.2);
+        let textY4 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3.5);
         text("Press ‘load’ then ‘start’ to begin hearing a snippet of sound from Wigmore Hall Learning’s programme of activity, or press ‘record’ to capture your own sound file using your phone or computer’s microphone.", rectangleX, textY1, rectangleWidth, rectangleHeight);
         text("Use the effect buttons to change the sounds reflection.", rectangleX, textY2, rectangleWidth, rectangleHeight);
         textSize(infoFont/1.5);
@@ -416,7 +416,6 @@ function audioVisualisation(){
 }
 
 function windowResized() {
-    setvisualisationWidth();
     resizeCanvas(windowWidth, windowHeight);
     loadButton.x = width/4;
     loadButton.y = height/5;
@@ -424,6 +423,7 @@ function windowResized() {
     playButton.y = (height/7) * 2.5;
     recordButton.x = (width/4) * 3;
     recordButton.y = height/5
+    setvisualisationWidth();
 
     let bottomButtonsY = (height/5)*4;
     for(let i = 0; i < numberOfEffectButtons; i++){
