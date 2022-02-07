@@ -519,6 +519,7 @@ function recordButtonPressed(){
     if(recordButton.state ===false){
         recordButton.colour = colours.on;
         recordButton.state = true;
+        recordButton.text = 'STOP';
         if (!recorderInitialised) {
             mic = new Tone.UserMedia();
             recorder = new Tone.Recorder();
@@ -536,6 +537,7 @@ function recordButtonPressed(){
 }
 
 async function recordStop(duration) {
+    recordButton.text = 'RECORD';
     recordButton.colour = colours.recordOff;
     recordButton.state = false;
     let data = await recorder.stop();
