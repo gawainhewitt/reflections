@@ -1,21 +1,20 @@
 // ******COLOURS******
 
 let colours = ({
-    background: 'rgb(204, 0, 73)',
-    //background: 'rgb(205, 181, 122)',
+    background: '#871F35',
     startScreen: 'rgba(50, 50, 50, 0.75)',
     infoText: 'white',
     loadOff: 'rgb(205, 181, 122)',
     playOff: 'rgb(205, 181, 122)',
     recordOff: 'rgb(205, 181, 122)',
     on: 'rgb(0,255,255)',
+    textOff: 'white',
     effectOff: 'rgb(205, 181, 122)',
     effectOn:'rgb(255, 0, 0)',
-    //stroke: 'rgb(204, 0, 73)',
     stroke: 'rgb(205, 181, 122)',
 });
 
-// ******FONTS AND IMAGES******
+// ******FONTS AND IMAGES*****
 
 let fontRegular;
 let fxFont1, fxFont2, fxFont3, fxFont4, fxFont5;
@@ -24,9 +23,8 @@ let learningLogo;
 let wigmoreLogoThickness; // how bold are the buttons
 let buttonTextThickness1; // how bold is the text
 let sizeOfLogo;
-let startTime = 0; //variable to store time in so start sign is animated
-let showStart = false; // do we show start over the log (for the animation)
 let infoFont;
+let introFont;
 
 //******BUTTONS******/
 
@@ -138,7 +136,8 @@ function preload(){
     fxFont3 = loadFont('assets/terminal-grotesque_open.otf');
     fxFont4 = loadFont('assets/wavy.otf');
     fxFont5 = loadFont('assets/GapSans.ttf');
-    wigmoreLogo = loadImage('assets/manLogo.jpeg');
+    wigmoreLogo = loadImage('assets/learningLogo.png');
+    introFont = loadFont('assets/BAHNSCHRIFT.TTF');
 }
 
 function setup() {  // setup p5
@@ -151,12 +150,12 @@ function setup() {  // setup p5
 }
 
 function draw() {
+    background(colours.background); // background
     if(!started){
         loadScreens();
     }else{
-    background(colours.background); // background
     //imageMode(CENTER);
-    audioVisualisation();
+    // audioVisualisation();
     buildTheLook();
     }
 }
@@ -187,6 +186,7 @@ function createButtonPositions() {
         y: height/5,
         state: false,
         colour: colours.loadOff,
+        textColour: colours.textOff,
         text: 'LOAD'
     });
     playButton = ({
@@ -194,6 +194,7 @@ function createButtonPositions() {
         y: (height/7) * 3,
         state: false,
         colour: colours.playOff,
+        textColour: colours.textOff,
         text: 'PLAY'
     });
     recordButton = ({
@@ -201,6 +202,7 @@ function createButtonPositions() {
         y: height/5,
         state: false,
         colour: colours.recordOff,
+        textColour: colours.textOff,
         text: 'RECORD'
     });
     let bottomButtonsY = (height/5)*4;
@@ -209,6 +211,7 @@ function createButtonPositions() {
             x: (width/(numberOfEffectButtons+1))*(i+1),
             y: bottomButtonsY,
             colour: colours.effectOff,
+            textColour: colours.textOff,
             text: effectText[i],
             status: false,
             font: effectFont[1],
@@ -217,97 +220,131 @@ function createButtonPositions() {
 }
 
 function buildTheLook(){
-    stroke(0);
+    rectMode(CORNER);
+    // stroke(0);
+    // stroke(255);
+    noStroke();
     fill(loadButton.colour);
     textSize(width/25);
     textFont(fontRegular);
     textAlign(CENTER, CENTER);
     if(interfaceState === 0){ // loading
-        rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
-        fill(0);
+        fill(255);
         text("LOADING", rectangleX, rectangleY, rectangleWidth, rectangleHeight);// same dimensions as the rectangle above
     }else if(interfaceState === 2){ // info screen
-        rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
         textSize(infoFont);
-        fill(0);
+        fill(255);
         strokeWeight(buttonTextThickness);
-        let textY1 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5));
-        let textY2 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*2);
+        let textY1 = (rectangleY-rectangleHeight/2);
+        let textY2 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*1.5);
         let textY3 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3.5);
         let textY4 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*4.5);
-        text("Reflections is an online sound installation by Gawain Hewitt.", rectangleX, textY1, rectangleWidth, rectangleHeight);
-        text("Use the load button to load new audio from the Wigmore Hall learning programme, and the record button to record your own sounds. Use the bottom buttons to change the sounds.", rectangleX, textY2, rectangleWidth, rectangleHeight);
-        text("If on an iPhone you will need to switch the mute switch on the side to “on”.", rectangleX, textY3, rectangleWidth, rectangleHeight);
-        text("Best experienced on Chrome.", rectangleX, textY4, rectangleWidth, rectangleHeight);
-
-    }else if(interfaceState === 3){ // network error
-        rect(rectangleX, rectangleY, rectangleWidth, rectangleHeight);
-        fill(0);
-        text("Network Problems, click to try again", rectangleX, rectangleY, rectangleWidth, rectangleHeight);// same dimensions as the rectangle above
+        text("This is an interactive sound installation by Gawain Hewitt.", rectangleX, textY1, rectangleWidth, rectangleHeight);
+        text("Created for the Wigmore Hall Learning Festival, Reflections, this installation invites you to create new musical sounds by manipulating original audio using a series of specially created effects.", rectangleX, textY2, rectangleWidth, rectangleHeight);
+        text("Like a droplet on the surface of water changes a reflection, these effects change the sound in endlessly unexpected ways, allowing for hours of musical play!", rectangleX, textY3, rectangleWidth, rectangleHeight);
+        textFont('Helvetica');
+        text('NEXT', width/2, (height/10)*9);
+        rectMode(CENTER);
+        noFill();
+        stroke(0);
+        rect(width/2, (height/10)*9, sizeOfLogo/3, sizeOfLogo/9);
+    }else if(interfaceState === 3){ // info screen
+        textSize(infoFont);
+        fill(255);
+        strokeWeight(buttonTextThickness);
+        let textY1 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*1.5);
+        let textY2 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*2.5);
+        let textY3 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3);
+        let textY4 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3.2);
+        text("Press ‘load’ then ‘start’ to begin hearing a snippet of sound from Wigmore Hall Learning’s programme of activity, or press ‘record’ to capture your own sound file using your phone or computer’s microphone.", rectangleX, textY1, rectangleWidth, rectangleHeight);
+        text("Use the effect buttons to change the sounds reflection.", rectangleX, textY2, rectangleWidth, rectangleHeight);
+        textSize(infoFont/1.5);
+        text("Best experienced on Google Chrome.", rectangleX, textY3, rectangleWidth, rectangleHeight);
+        text("Remember to switch your side mute button to off if on an iPhone.", rectangleX, textY4, rectangleWidth, rectangleHeight);
+        textFont('Helvetica');
+        text('NEXT', width/2, (height/10)*9);
+        rectMode(CENTER);
+        noFill();
+        stroke(0);
+        rect(width/2, (height/10)*9, sizeOfLogo/3, sizeOfLogo/9);
+    }else if(interfaceState === 4){ // network error
+        fill(255);
+        let textY1 = (rectangleY-rectangleHeight/4);
+        let textY2 = rectangleY;
+        text("Network Problems", rectangleX, textY1, rectangleWidth, rectangleHeight);
+        text("Click to try again", rectangleX, textY2, rectangleWidth, rectangleHeight);
     }else if(interfaceState === 1){ // the installation
         textSize(width/40);
         noFill();
         strokeWeight(wigmoreLogoThickness); // how bold are the icons
         stroke(loadButton.colour);
         drawWigmoreLogo(loadButton.x, loadButton.y, buttonRadius);
-        fill(loadButton.colour);
+        fill(loadButton.textColour);
         strokeWeight(buttonTextThickness);
+        stroke(loadButton.textColour);
+        // noStroke();
         textFont(fontRegular);
-        text(loadButton.text, loadButton.x, loadButton.y + buttonRadius * 0.7);
+        text(loadButton.text, loadButton.x, loadButton.y + buttonRadius * 0.9);
         if(Tone.UserMedia.supported){
             noFill();
             strokeWeight(wigmoreLogoThickness);
             stroke(recordButton.colour);
             drawWigmoreLogo(recordButton.x, recordButton.y, buttonRadius);
-            fill(recordButton.colour);
+            fill(recordButton.textColour);
             strokeWeight(buttonTextThickness);
-            text(recordButton.text, recordButton.x, recordButton.y + buttonRadius * 0.7);
+            stroke(recordButton.textColour);
+            // noStroke();
+            text(recordButton.text, recordButton.x, recordButton.y + buttonRadius * 0.9);
         }
         if(effectedSongPlayer.loaded === true){
             noFill();
             strokeWeight(wigmoreLogoThickness);
             stroke(playButton.colour);
             drawWigmoreLogo(playButton.x, playButton.y, buttonRadius*2);
-            fill(playButton.colour);
+            fill(playButton.textColour);
             strokeWeight(buttonTextThickness);
-            text(playButton.text, playButton.x, playButton.y + buttonRadius *1.2);
+            stroke(playButton.textColour);
+            // noStroke();
+            text(playButton.text, playButton.x, playButton.y + buttonRadius *1.4);
         }else{
-            interfaceState = 3;
+            interfaceState = 4;
         }
         for(let i = 0; i < numberOfEffectButtons; i++){
             stroke(effectButtons[i].colour);
             strokeWeight(buttonTextThickness);
             textFont(effectFont[i]);
-            fill(effectButtons[i].colour);
-            text(effectButtons[i].text, effectButtons[i].x, effectButtons[i].y + buttonRadius *0.7);
+            fill(effectButtons[i].textColour);
+            // noStroke();
+            stroke(effectButtons[i].textColour);
+            text(effectButtons[i].text, effectButtons[i].x, effectButtons[i].y + buttonRadius *0.9);
             noFill();
             stroke(effectButtons[i].colour);
             strokeWeight(wigmoreLogoThickness);
             drawWigmoreLogo(effectButtons[i].x, effectButtons[i].y, buttonRadius);
         }
+        audioVisualisation();
+
     }
 }
 
 function loadScreens(){
-    background(0);
     textAlign(CENTER, CENTER);
-    fill(colours.startScreen); // background
-    rect(0, 0, width, height);
-    fill(0);
-    strokeWeight(buttonTextThickness);
+    rectMode(CENTER);
+    noFill();
     stroke(0);
-    imageMode(CORNER);
-    image(wigmoreLogo, 0, 0, width, height, 0, 0, 50, 50);
+    rect(width/2, (height/10)*9, sizeOfLogo/3, sizeOfLogo/9);
+    textFont(introFont);
+    strokeWeight(buttonTextThickness);
+    noStroke();
+    fill(255);
+    textSize(width/8);
+    text('REFLECTIONS', width/2, height/5);
     imageMode(CENTER);
-    image(wigmoreLogo, width/2, height/2, sizeOfLogo, sizeOfLogo);
+    image(wigmoreLogo, width/2, (height/5)*3, sizeOfLogo, (sizeOfLogo/325)*136);
     textSize(sizeOfLogo/20);
-    if(frameCount-startTime > frameRate()/2){// animate start
-        showStart = !showStart;
-        startTime = frameCount;
-    }
-    if(showStart){
-        text('START', width/2, height/2);
-    }
+    textFont('Helvetica');
+    text('START', width/2, (height/10)*9);
+
 }
 
 function audioVisualisation(){
@@ -398,9 +435,9 @@ function windowResized() {
 function setvisualisationWidth() {
     visualisationWidth = (width/waveformRatio);
     visualisationYPosition = playButton.y;
-    visualisationThickness = width/500;
+    visualisationThickness = width/400;
     wigmoreLogoThickness = width/200;
-    buttonTextThickness = width/900;
+    buttonTextThickness = width/800;
     visualisationHeight = height;
     rectangleX = width/6;
     rectangleY = height/6;
@@ -408,11 +445,11 @@ function setvisualisationWidth() {
     rectangleHeight = height/1.5;
     if(height > width){
         buttonRadius = visualisationWidth/3.5;
-        sizeOfLogo = width;
+        sizeOfLogo = (width/4)*3;
         infoFont = height/50;
     }else{
         buttonRadius = visualisationWidth/5;
-        sizeOfLogo = height;
+        sizeOfLogo = (height/4)*3;
         infoFont = width/50;
     }
 }
@@ -423,8 +460,10 @@ function handleClick() {
         started = true;
         interfaceState = 2;
     }else if(interfaceState === 2){
-        interfaceState = 1;
+        interfaceState = 3;
     }else if(interfaceState === 3){
+        interfaceState = 1;
+    }else if(interfaceState === 4){
         console.log("network problems click");
         interfaceState = 0;
         assignSoundToPlayer();
@@ -460,11 +499,13 @@ function loadButtonPressed() {
     effectedSongPlayer.stop();
     Tone.Transport.stop();
     playButton.colour = colours.playOff;
+    // playButton.textColour = colours.textOff;
     playButton.text = 'PLAY';
     reload();
     lastBuffer = currentBuffer;
     console.log(`lastBuffer = ${lastBuffer}`);
     loadButton.colour = colours.on;
+    // loadButton.textColour = colours.on;
     chooseSample();
 }
 
@@ -533,6 +574,12 @@ function playSong() {
         Tone.Transport.clear(scheduledRepeatID); // clear the repeat above
         effectButtons[0].status = false;
         effect1(0);
+    }
+
+    if(recordButton.state === true){
+        let recordingDuration = Date.now() - recordTime;
+        recordingDuration = (recordingDuration /1000);
+        recordStop(recordingDuration);
     }
 }
 
@@ -708,7 +755,7 @@ function assignSoundToPlayer() {
             chooseSample();
         },
         () => {
-            interfaceState = 3;
+            interfaceState = 4;
             console.log(`interfaceState = ${interfaceState}`)
         });
     }else if(bufferToPlay === buffer1){
@@ -723,7 +770,7 @@ function assignSoundToPlayer() {
             }
         },
         () => {
-            interfaceState = 3;
+            interfaceState = 4;
             console.log(`interfaceState = ${interfaceState}`)
         });
     }else{
@@ -738,7 +785,7 @@ function assignSoundToPlayer() {
             }
         },
         () => {
-            interfaceState = 3;
+            interfaceState = 4;
             console.log(`interfaceState = ${interfaceState}`)
         });
     }
@@ -753,7 +800,8 @@ function reload() {
         getFileLength(thisBuff);
         interfaceState = 1;
     }else{
-        interfaceState = 0;
+        // interfaceState = 0;
+        interfaceState = 4;
     }
     console.log('when we getting here?');
     // buffer0.dispose();
