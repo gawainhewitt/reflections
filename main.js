@@ -130,6 +130,9 @@ for(let i = 0; i < visualisation2.length; i++){ // populate the array
     visualisation2[i] = 0;
 }
 let rectangleX, rectangleY, rectangleWidth, rectangleHeight;
+let infoCtrlSquareWidth;
+let infoCtrlSquareHeight;
+
 
 function preload(){
     chooseSample();
@@ -149,6 +152,8 @@ function setup() {  // setup p5
     setvisualisationWidth();
     chain();
     setupTouch();
+    // infoCtrlSquareWidth = (textWidth(infoButton.text)*1.5);
+    // infoCtrlSquareHeight = (textAscent(infoButton.text)*1.5);
     // pixelDensity(1);
 }
 
@@ -157,8 +162,6 @@ function draw() {
     if(!started){
         loadScreens();
     }else{
-    //imageMode(CENTER);
-    // audioVisualisation();
     buildTheLook();
     }
 }
@@ -232,6 +235,10 @@ function createButtonPositions() {
             font: effectFont[1],
         });
     }
+    textSize(width/40);
+    textFont(fontRegular);
+    infoCtrlSquareWidth = (textWidth(infoButton.text)*1.5);
+    infoCtrlSquareHeight = (textAscent(infoButton.text)*1.5);
 }
 
 function buildTheLook(){
@@ -311,13 +318,22 @@ function buildTheLook(){
         strokeWeight(wigmoreLogoThickness); // how bold are the icons
         stroke(loadButton.colour);
         drawWigmoreLogo(loadButton.x, loadButton.y, buttonRadius);
-        fill(loadButton.textColour);
-        strokeWeight(buttonTextThickness);
-        stroke(loadButton.textColour);
         // noStroke();
-        textFont(fontRegular);
+        strokeWeight(buttonTextThickness);
+        textFont('Helvetica');
+        rectMode(CENTER);
+        stroke(255);
+        //width needs to be linked to font and word size
+        // console.log(`infoCtrlSquareHeight = ${infoCtrlSquareHeight}`);
+        // console.log(`infoCtrlSquareWidth = ${infoCtrlSquareWidth}`);
+        rect(infoButton.x, infoButton.y, infoCtrlSquareWidth, infoCtrlSquareHeight);
+        rect(ctrlButton.x, ctrlButton.y, infoCtrlSquareWidth, infoCtrlSquareHeight);
+        fill(255);
         text(infoButton.text, infoButton.x, infoButton.y);
         text(ctrlButton.text, ctrlButton.x, ctrlButton.y);
+        textFont(fontRegular);
+        fill(loadButton.textColour);
+        stroke(loadButton.textColour);
         text(loadButton.text, loadButton.x, loadButton.y + buttonRadius * 0.8);
         if(Tone.UserMedia.supported){
             noFill();
@@ -463,6 +479,8 @@ function windowResized() {
     infoButton.y = height/10;
     ctrlButton.x = (width/14)*13;
     ctrlButton.y = height/10;
+    infoCtrlSquareWidth = (textWidth(infoButton.text)*1.5);
+    infoCtrlSquareHeight = (textAscent(infoButton.text)*1.5);
     setvisualisationWidth();
 
     let bottomButtonsY = (height/5)*4;
