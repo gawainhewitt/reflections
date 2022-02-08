@@ -816,7 +816,7 @@ function assignSoundToPlayer() {
             // interfaceState = 4;
             interfaceState = 0;
             assignSoundToPlayer();
-            console.log(`it's here interfaceState = ${interfaceState}`)
+            console.log(` if(bufferToPlay === "start") interfaceState = ${interfaceState}`)
         });
             // chooseSample();
     }else if(bufferToPlay === buffer1){
@@ -832,7 +832,7 @@ function assignSoundToPlayer() {
         },
         () => {
             interfaceState = 4;
-            console.log(`interfaceState = ${interfaceState}`)
+            console.log(`else if(bufferToPlay === buffer1)interfaceState = ${interfaceState}`)
         });
     }else{
         buffer1 = new Tone.ToneAudioBuffer(`/assets/${theSample}`, () => {
@@ -847,7 +847,7 @@ function assignSoundToPlayer() {
         },
         () => {
             interfaceState = 4;
-            console.log(`interfaceState = ${interfaceState}`)
+            console.log(`else interfaceState = ${interfaceState}`)
         });
     }
 }
