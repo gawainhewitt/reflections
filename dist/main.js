@@ -107,8 +107,9 @@ let usedSounds = new Array;
 let bufferToPlay = "start";
 let lastBuffer;
 let currentBuffer;
-let numberOfSamples = 5; // the number of samples that we are
+let numberOfSamples = 6; // the number of samples that we are
 let started = false; //have we invoked Tone.start() and left the info screen?
+let initFile = false; // ensure the first file is always the same one
 let fileLength; // store the length of a sample in seconds in here
 let scheduledRepeatID; // variable to store the scheduleRepeat in (as the function returns this). We can then use this to cancel it later.
 
@@ -396,6 +397,8 @@ function audioVisualisation(){
             effectsOn++;
         }
     }
+    // level = uneffectedMeter.getValue();
+
     if(effectsOn === 0){
         level = effectedMeter.getValue();
     }else{
@@ -758,22 +761,30 @@ function getRndInteger(min, max) {
   }
 
 function chooseSample(){
-    console.log(`usedSounds = ${usedSounds}`);
-    if (usedSounds.length === numberOfSamples){
-        console.log(`array full`);
-        usedSounds = [];
+    if(initFile){
+        console.log(`usedSounds = ${usedSounds}`);
+        if (usedSounds.length === numberOfSamples){
+            console.log(`array full`);
+            usedSounds = [];
+        }
+
+        do{
+            whichSound = getRndInteger(1, numberOfSamples);
+        }while(haveWeUsedSound(whichSound));
+
+        usedSounds.push(whichSound);
+        console.log(`whichSound = ${whichSound}`);
+        theSample = `audioFile${whichSound}.mp3`;
+        console.log(`theSample = ${theSample}`);
+        console.log(`usedSounds = ${usedSounds}`);
+        assignSoundToPlayer();
+    }else{
+        whichSound = 6;
+        usedSounds.push(whichSound);
+        theSample = `audioFile${whichSound}.mp3`;
+        assignSoundToPlayer();
+        initFile = true;
     }
-
-    do{
-        whichSound = getRndInteger(1, numberOfSamples);
-    }while(haveWeUsedSound(whichSound));
-
-    usedSounds.push(whichSound);
-    console.log(`whichSound = ${whichSound}`);
-    theSample = `audioFile${whichSound}.mp3`;
-    console.log(`theSample = ${theSample}`);
-    console.log(`usedSounds = ${usedSounds}`);
-    assignSoundToPlayer();
 }
 
 function haveWeUsedSound(comparer) {
@@ -793,9 +804,9 @@ function assignSoundToPlayer() {
             currentBuffer = 0;
             loadButton.colour = colours.loadOff;
             console.log(`currentBuffer = ${currentBuffer}`);
-            if (interfaceState === 0){
-                reload();
-            }
+            // if (interfaceState === 0){
+            //     reload();
+            // }
             reload();
             lastBuffer = currentBuffer;
             console.log(`lastBuffer = ${lastBuffer}`);
