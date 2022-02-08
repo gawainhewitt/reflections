@@ -271,7 +271,7 @@ function buildTheLook(){
         let textY2 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*2.5);
         let textY3 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3);
         let textY4 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3.4);
-        text("Press ‘load’ then ‘start’ to begin hearing a snippet of sound from Wigmore Hall Learning’s programme of activity, or press ‘record’ to capture your own sound file using your phone or computer’s microphone.", rectangleX, textY1, rectangleWidth, rectangleHeight);
+        text("Press ‘load’ then ‘play’ to begin hearing a snippet of sound from Wigmore Hall Learning’s programme of activity, or press ‘record’ to capture your own sound file using your phone or computer’s microphone.", rectangleX, textY1, rectangleWidth, rectangleHeight);
         text("Use the effect buttons to change the sounds reflection.", rectangleX, textY2, rectangleWidth, rectangleHeight);
         textSize(infoFont/1.5);
         text("Best experienced on Google Chrome.", rectangleX, textY3, rectangleWidth, rectangleHeight);
