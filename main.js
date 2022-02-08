@@ -813,7 +813,9 @@ function assignSoundToPlayer() {
             chooseSample();
         },
         () => {
-            interfaceState = 4;
+            // interfaceState = 4;
+            interfaceState = 0;
+            assignSoundToPlayer();
             console.log(`it's here interfaceState = ${interfaceState}`)
         });
             // chooseSample();
