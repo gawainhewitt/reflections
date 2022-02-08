@@ -810,13 +810,13 @@ function assignSoundToPlayer() {
             reload();
             lastBuffer = currentBuffer;
             console.log(`lastBuffer = ${lastBuffer}`);
-            // chooseSample();
+            chooseSample();
         },
         () => {
             interfaceState = 4;
             console.log(`it's here interfaceState = ${interfaceState}`)
         });
-            chooseSample();
+            // chooseSample();
     }else if(bufferToPlay === buffer1){
         buffer0 = new Tone.ToneAudioBuffer(`/assets/${theSample}`, () => {
             console.log("buffer 0 loaded");
