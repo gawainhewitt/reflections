@@ -213,13 +213,13 @@ function createButtonPositions() {
         text: 'RECORD'
     });
     infoButton = ({
-        x: width/14,
+        x: width/13,
         y: height/10,
         state: false,
         text: 'ABOUT'
     });
     ctrlButton = ({
-        x: (width/14)*13,
+        x: (width/13)*12,
         y: height/10,
         state: false,
         text: 'HOW TO'
@@ -497,7 +497,7 @@ function handleClick() {
                 debounce(effectButtonPressed(i), 200);
             }
         }
-        if (isMouseInsideText(infoButton.text, infoButton.x, infoButton.y)) {
+        if (mouseX > infoButton.x-(infoCtrlSquareWidth/2) && mouseX < infoButton.x+(infoCtrlSquareWidth/2) && mouseY > infoButton.y-(infoCtrlSquareHeight/2)-(infoCtrlSquareHeight/9)&& mouseY < infoButton.y+(infoCtrlSquareHeight/2)+(infoCtrlSquareHeight/9)) {         //about button click
             var el = document.getElementById("aboutpage");
             el.style.display = "block";
             el.scrollIntoView({behavior: 'smooth'}); // this scrolls the page up to the top again. NOTHING else worked and I wasted literally hours.
@@ -508,7 +508,7 @@ function handleClick() {
             // window.scrollTop=0;
             interfaceState = 5;
         }
-        if (isMouseInsideText(ctrlButton.text, ctrlButton.x, ctrlButton.y)) {
+        if (mouseX > ctrlButton.x-(infoCtrlSquareWidth/2) && mouseX < ctrlButton.x+(infoCtrlSquareWidth/2) && mouseY > ctrlButton.y-(infoCtrlSquareHeight/2)-(infoCtrlSquareHeight/9)&& mouseY < ctrlButton.y+(infoCtrlSquareHeight/2)+(infoCtrlSquareHeight/9)) {
             document.getElementById("aboutpage").style.display = "none";
             document.getElementById("aboutpage").style.display = "none";
             var el = document.getElementById("howtopage");
@@ -982,13 +982,13 @@ function debounce(func, wait, immediate) {
     // }
   }
 
-  function isMouseInsideText(message, messageX, messageY) {
-    textSize(width/40);
-    textFont(fontRegular);
-    const messageWidth = textWidth(message);
-    const messageTop = messageY - (textAscent()/2);
-    const messageBottom = messageY + (textDescent()*2);
+//   function isMouseInsideText(message, messageX, messageY) {
+//     textSize(width/40);
+//     textFont(fontRegular);
+//     const messageWidth = textWidth(message);
+//     const messageTop = messageY - (textAscent()/2);
+//     const messageBottom = messageY + (textDescent()*2);
 
-    return mouseX > messageX-messageWidth && mouseX < messageX + messageWidth &&
-      mouseY > messageTop && mouseY < messageBottom;
-  }
+//     return mouseX > messageX-messageWidth && mouseX < messageX + messageWidth &&
+//       mouseY > messageTop && mouseY < messageBottom;
+//   }
