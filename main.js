@@ -500,7 +500,7 @@ function handleClick() {
         if (mouseX > infoButton.x-(infoCtrlSquareWidth/2) && mouseX < infoButton.x+(infoCtrlSquareWidth/2) && mouseY > infoButton.y-(infoCtrlSquareHeight/2)-(infoCtrlSquareHeight/9)&& mouseY < infoButton.y+(infoCtrlSquareHeight/2)+(infoCtrlSquareHeight/9)) {         //about button click
             var el = document.getElementById("aboutpage");
             el.style.display = "block";
-            // el.scrollIntoView({behavior: 'smooth'}); // this scrolls the page up to the top again. NOTHING else worked and I wasted literally hours.
+            el.scrollIntoView({behavior: 'smooth'}); // this scrolls the page up to the top again. NOTHING else worked and I wasted literally hours.
             document.getElementById("howtopage").style.display = "none";
             document.getElementById("p5parent").style.visibility = "hidden";
             document.body.style.overflowY = 'auto';
@@ -512,6 +512,7 @@ function handleClick() {
             document.getElementById("aboutpage").style.display = "none";
             var el = document.getElementById("howtopage");
             el.style.display = "block";
+            el.scrollIntoView({behavior: 'smooth'}); // this scrolls the page up to the top again. NOTHING else worked and I wasted literally hours.
             document.getElementById("p5parent").style.visibility = "hidden";
             document.body.style.overflowY = 'auto';
             // window.scroll(0, 0);
