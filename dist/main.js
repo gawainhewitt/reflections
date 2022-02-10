@@ -153,9 +153,6 @@ function setup() {  // setup p5
     chain();
     setupTouch();
     document.getElementById("startbutton").style.display = "inline";
-    // infoCtrlSquareWidth = (textWidth(infoButton.text)*1.5);
-    // infoCtrlSquareHeight = (textAscent(infoButton.text)*1.5);
-    // pixelDensity(1);
 }
 
 function draw() {
@@ -257,88 +254,24 @@ function buildTheLook(){
     if(interfaceState === 0){ // loading
         fill(255);
         text("LOADING", rectangleX, rectangleY, rectangleWidth, rectangleHeight);// same dimensions as the rectangle above
-    }else if(interfaceState === 2){ // info screen
-        // textSize(infoFont);
-        // fill(255);
-        // strokeWeight(buttonTextThickness);
-        // let textY1 = (rectangleY-rectangleHeight/2);
-        // let textY2 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*1.5);
-        // let textY3 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3.5);
-        // let textY4 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*4.5);
-        // text("This is an interactive sound installation by Gawain Hewitt.", rectangleX, textY1, rectangleWidth, rectangleHeight);
-        // text("Created for the Wigmore Hall Learning Festival, Reflections, this installation invites you to create new musical sounds by manipulating original audio using a series of specially created effects.", rectangleX, textY2, rectangleWidth, rectangleHeight);
-        // text("Like a droplet on the surface of water changes a reflection, these effects change the sound in endlessly unexpected ways, allowing for hours of musical play!", rectangleX, textY3, rectangleWidth, rectangleHeight);
-        // textFont('Helvetica');
-        // text('NEXT', width/2, (height/10)*9);
-        // rectMode(CENTER);
-        // noFill();
-        // stroke(0);
-        // rect(width/2, (height/10)*9, sizeOfLogo/3, sizeOfLogo/9);
-        // document.getElementById("p5parent").style.visibility = "hidden";
-        // document.getElementById("aboutpage").style.display = "block";
-        // document.getElementById("howtopage").style.display = "none";
-    }else if(interfaceState === 3){ // info screen
-        // textSize(infoFont);
-        // fill(255);
-        // strokeWeight(buttonTextThickness);
-        // let textY1 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*1.2);
-        // let textY2 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*2.5);
-        // let textY3 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3);
-        // let textY4 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3.4);
-        // text("Press ‘load’ then ‘play’ to begin hearing a snippet of sound from Wigmore Hall Learning’s programme, or press ‘record’ to capture your own sound file using your phone or computer’s microphone.", rectangleX, textY1, rectangleWidth, rectangleHeight);
-        // text("Use the effect buttons to change the sounds reflection.", rectangleX, textY2, rectangleWidth, rectangleHeight);
-        // textSize(infoFont/1.5);
-        // text("Best experienced on Google Chrome.", rectangleX, textY3, rectangleWidth, rectangleHeight);
-        // text("Remember to switch your side mute button to off if on an iPhone.", rectangleX, textY4, rectangleWidth, rectangleHeight);
-        // textFont('Helvetica');
-        // text('NEXT', width/2, (height/10)*9);
-        // rectMode(CENTER);
-        // noFill();
-        // stroke(0);
-        // rect(width/2, (height/10)*9, sizeOfLogo/3, sizeOfLogo/9);
-        // document.getElementById("p5parent").style.visibility = "hidden";
-        // document.getElementById("aboutpage").style.display = "none";
-        // document.getElementById("howtopage").style.display = "block";
     }else if(interfaceState === 4){ // network error
         fill(255);
         let textY1 = (rectangleY-rectangleHeight/4);
         let textY2 = rectangleY;
         text("Network Problems", rectangleX, textY1, rectangleWidth, rectangleHeight);
         text("Click to try again", rectangleX, textY2, rectangleWidth, rectangleHeight);
-    }else if(interfaceState === 5){ // info screen
-        // textSize(infoFont);
-        // fill(255);
-        // strokeWeight(buttonTextThickness);
-        // let textY1 = (rectangleY-rectangleHeight/2);
-        // let textY2 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*1.5);
-        // let textY3 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*3.5);
-        // let textY4 = ((rectangleY-rectangleHeight/2)+(rectangleHeight/5)*4.5);
-        // text("This is an interactive sound installation by Gawain Hewitt.", rectangleX, textY1, rectangleWidth, rectangleHeight);
-        // text("Created for the Wigmore Hall Learning Festival, Reflections, this installation invites you to create new musical sounds by manipulating original audio using a series of specially created effects.", rectangleX, textY2, rectangleWidth, rectangleHeight);
-        // text("Like a droplet on the surface of water changes a reflection, these effects change the sound in endlessly unexpected ways, allowing for hours of musical play!", rectangleX, textY3, rectangleWidth, rectangleHeight);
-        // textFont('Helvetica');
-        // text('NEXT', width/2, (height/10)*9);
-        // rectMode(CENTER);
-        // noFill();
-        // stroke(0);
-        // rect(width/2, (height/10)*9, sizeOfLogo/3, sizeOfLogo/9);
     }else if(interfaceState === 1){ // the installation
         textSize(width/40);
         noFill();
         strokeWeight(wigmoreLogoThickness); // how bold are the icons
         stroke(loadButton.colour);
-        // drawWigmoreLogo(loadButton.x, loadButton.y, buttonRadius);
         circle(loadButton.x, loadButton.y, buttonRadius);
-        // noStroke();
         strokeWeight(buttonTextThickness);
-        textFont('Helvetica');
+        // textFont('Helvetica');
         rectMode(CENTER);
         stroke(255);
-        //width needs to be linked to font and word size
-        // console.log(`infoCtrlSquareHeight = ${infoCtrlSquareHeight}`);
-        // console.log(`infoCtrlSquareWidth = ${infoCtrlSquareWidth}`);
-        rect(infoButton.x, infoButton.y, infoCtrlSquareWidth, infoCtrlSquareHeight);
-        rect(ctrlButton.x, ctrlButton.y, infoCtrlSquareWidth, infoCtrlSquareHeight);
+        rect(infoButton.x, infoButton.y+(infoCtrlSquareHeight/9), infoCtrlSquareWidth, infoCtrlSquareHeight);
+        rect(ctrlButton.x, ctrlButton.y+(infoCtrlSquareHeight/9), infoCtrlSquareWidth, infoCtrlSquareHeight);
         fill(255);
         text(infoButton.text, infoButton.x, infoButton.y);
         text(ctrlButton.text, ctrlButton.x, ctrlButton.y);
@@ -350,12 +283,10 @@ function buildTheLook(){
             noFill();
             strokeWeight(wigmoreLogoThickness);
             stroke(recordButton.colour);
-            // drawWigmoreLogo(recordButton.x, recordButton.y, buttonRadius);
             circle(recordButton.x, recordButton.y, buttonRadius);
             fill(recordButton.textColour);
             strokeWeight(buttonTextThickness);
             stroke(recordButton.textColour);
-            // noStroke();
             text(recordButton.text, recordButton.x, recordButton.y + buttonRadius * 0.8);
         }
         if(effectedSongPlayer.loaded === true){
@@ -366,7 +297,6 @@ function buildTheLook(){
             fill(playButton.textColour);
             strokeWeight(buttonTextThickness);
             stroke(playButton.textColour);
-            // noStroke();
             text(playButton.text, playButton.x, playButton.y + buttonRadius *1.4);
         }else{
             interfaceState = 4;
@@ -382,34 +312,12 @@ function buildTheLook(){
             noFill();
             stroke(effectButtons[i].colour);
             strokeWeight(wigmoreLogoThickness);
-            // drawWigmoreLogo(effectButtons[i].x, effectButtons[i].y, buttonRadius);
             circle(effectButtons[i].x, effectButtons[i].y, buttonRadius);
         }
         audioVisualisation();
 
     }
 }
-
-// function loadScreens(){
-    // document.getElementById("wigmorelogo").width = `${sizeOfLogo}`;
-    // textAlign(CENTER, CENTER);
-    // rectMode(CENTER);
-    // noFill();
-    // stroke(0);
-    // rect(width/2, (height/10)*9, sizeOfLogo/3, sizeOfLogo/9);
-    // textFont(introFont);
-    // strokeWeight(buttonTextThickness);
-    // noStroke();
-    // fill(255);
-    // textSize(width/8);
-    // text('REFLECTIONS', width/2, height/5);
-    // imageMode(CENTER);
-    // image(wigmoreLogo, width/2, (height/5)*3, sizeOfLogo, (sizeOfLogo/325)*136);
-    // textSize(sizeOfLogo/20);
-    // textFont('Helvetica');
-    // text('START', width/2, (height/10)*9);
-
-// }
 
 function audioVisualisation(){
     stroke(playButton.colour);
