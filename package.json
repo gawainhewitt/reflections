@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "build": "rm -rf ./dist/* && mkdir ./dist/css && cp ./index.html ./dist/index.html && cp ./css/main.css ./dist/css/main.css && cp ./main.js ./dist/main.js && cp ./p5.min.js ./dist/p5.min.js && cp -avr ./assets/ ./dist/"
+    "build": "rm -rf ./dist/* && mkdir ./dist/css && cp ./index.html ./dist/index.html && cp ./css/main.css ./dist/css/main.css && cp ./css/Sprat-CondensedLight.otf ./dist/css/Sprat-CondensedLight.otf && cp ./main.js ./dist/main.js && cp ./p5.min.js ./dist/p5.min.js && cp -avr ./assets/ ./dist/"
   },
   "repository": {
     "type": "git",

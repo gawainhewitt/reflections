@@ -1,8 +1,14 @@
 body {
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    background-color: rgb(170, 174, 182);
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  background-color: #871F35;
+  overflow-y: hidden;
+}
+
+@font-face {
+  font-family: 'Sprat-Condensed';
+  src: url('Sprat-CondensedLight.otf');
 }
 
 #mycanvas {  /* dynamically change the p5 canvas to always fill the parent div width.  The width of the canvas from p5 is dynamically created, meaning that it gets applied at element level. There is no way of overriding that with specificity, so you need to raise a declaration as !important: */
@@ -15,6 +21,19 @@ body {
   float: left;
   height: 100%;
   width: 100%;
+  visibility: hidden;
+}
+
+#logopage {
+  display: block;
+}
+
+#aboutpage {
+  display: none;
+}
+
+#howtopage {
+  display: none;
 }
 
 @media (min-aspect-ratio: 3/2) {
@@ -26,6 +45,46 @@ body {
     margin-right: auto;
     /* border: 5px solid red; */
   }
+  .nextbutton {
+    border: medium solid black;
+    display: inline;
+    padding: 1%;
+    font-size: 4vw;
+    text-align: left; /*i think you need this along with the outer div being center to get the box and text in the middle */
+  }
+  img {
+    width: 40%;
+    height: auto;
+    display: block; /* this fixes space beneath the images within the divs */
+    margin: 1vh;
+  }
+  .invisibletitle{
+    visibility: hidden;
+    font-size: 6vh;
+  }
+  .invisibletitle2{
+    visibility: hidden;
+    font-size: 6vh;
+  }
+  .column2 {
+    margin: 10;
+    padding: 0px;
+    height: auto;
+    width: 15%;
+    float: left;
+    text-align: center;
+    /* border: medium dashed red; */
+  }
+
+  .column3 {
+    margin: 10;
+    padding: 0px;
+    height: auto;
+    width: 70%;
+    float: left;
+    text-align: center;
+    /* border: medium dashed red; */
+  }
 }
 
 @media (min-aspect-ratio: 16/17) and (max-aspect-ratio: 3/2) {
@@ -36,6 +95,47 @@ body {
     margin-right: auto;
     /* border: 5px solid blue; */
   }
+  .nextbutton {
+    border: medium solid black;
+    display: inline;
+    padding: 1%;
+    font-size: 6vh;
+    text-align: left;
+  }
+
+  img {
+    width: 40%;
+    height: auto;
+    display: block; /* this fixes space beneath the images within the divs */
+    margin: 1vh;
+  }
+  .invisibletitle{
+    visibility: hidden;
+    font-size: 10vh;
+  }
+  .invisibletitle2{
+    visibility: hidden;
+    font-size: 6vh;
+  }
+  .column2 {
+    margin: 10;
+    padding: 0px;
+    height: auto;
+    width: 15%;
+    float: left;
+    text-align: center;
+    /* border: medium dashed red; */
+  }
+
+  .column3 {
+    margin: 10;
+    padding: 0px;
+    height: auto;
+    width: 70%;
+    float: left;
+    text-align: center;
+    /* border: medium dashed red; */
+  }
 }
 
 @media (max-aspect-ratio: 16/17) {
@@ -45,14 +145,55 @@ body {
     margin-left: auto;
     margin-right: auto;
     /* border: 5px solid yellow; */
-    }
+  }
+  .nextbutton {
+    border: medium solid black;
+    display: inline;
+    padding: 1%;
+    font-size: 7vh;
+    text-align: left;
+  }
+
+  img {
+    width: 70%;
+    height: auto;
+    display: block; /* this fixes space beneath the images within the divs */
+    margin: 1vh;
+  }
+  .invisibletitle{
+    visibility: hidden;
+    font-size: 10vh;
+  }
+  .invisibletitle2{
+    visibility: hidden;
+    font-size: 1vh;
+  }
+  .column2 {
+    margin: 10;
+    padding: 0px;
+    height: auto;
+    width: 5%;
+    float: left;
+    text-align: center;
+    /* border: medium dashed red; */
+  }
+
+  .column3 {
+    margin: 10;
+    padding: 0px;
+    height: auto;
+    width: 90%;
+    float: left;
+    text-align: center;
+    /* border: medium dashed red; */
+  }
 }
 
 h1 {
   font-family: Arial, Helvetica, sans-serif;
   padding: 20em, 0;
   text-align: center;
-  font-size: 5em;
+  /* font-size: 5em; */
   color: white;
 }
 
@@ -72,18 +213,58 @@ h1 {
   color: white;
 }
 
+#startbutton {
+  /* visibility: hidden; */
+  display: none;
+}
+
 p {
-  font-family: Arial, Helvetica, sans-serif;
-  padding: 20em, 0;
+  font-family: 'Sprat-Condensed', Arial, Helvetica, sans-serif;
+  padding: 0% 0% 0% 0%;
   text-align: center;
-  font-size: 1.5em;
   color: white;
+  margin: 0 auto;
 }
 
-img {
-    width: 100%;
-    height: auto;
-    display: block; /* this fixes space beneath the images within the divs */
+.centre {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-span.clear { clear: left; display: block; } /* clears the float thus ensuring the images remain within the container div */
+.column {
+  margin: 10;
+  padding: 0px;
+  height: auto;
+  width: 32.6%;
+  float: left;
+  text-align: center;
+  /* border: medium dashed red; */
+}
+
+.newbutton {
+  text-align: center;
+}
+
+span.clear {
+  clear: left;
+  display: block;
+} /* clears the float thus ensuring the images remain within the container div */
+
+a {
+  color: white;
+  text-decoration: none;
+  text-decoration: underline;
+}
+
+a:hover {
+  color: turquoise;
+}
+
+a:active {
+  color: black;
+}
+
+/* a:visited {
+  color: turquoise;
+} */
