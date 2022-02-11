@@ -87,6 +87,10 @@ body {
   }
 }
 
+.speech {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
 @media (min-aspect-ratio: 16/17) and (max-aspect-ratio: 3/2) {
   .containerclass{
     width: 100%;
