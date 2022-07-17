@@ -1,5 +1,7 @@
 # Reflections
 
+<img src="./readme_images/reflections.gif" width="500" alt="picture of the app">
+
 This is an [interactive sound installation](https://www.wigmoreinteractive.com/) by [Gawain Hewitt](https://gawainhewitt.co.uk/).
 
 Created for the [Wigmore Hall Learning](https://wigmore-hall.org.uk/learning/learning-landing-page) Festival, Reflections, this installation invites you to create new musical sounds by manipulating original audio using a series of specially created effects.
